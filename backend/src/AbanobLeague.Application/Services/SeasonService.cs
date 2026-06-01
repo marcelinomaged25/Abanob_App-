@@ -93,6 +93,39 @@ namespace AbanobLeague.Application.Services
             var season = await _unitOfWork.Seasons.GetByIdAsync(id);
             if (season == null) return false;
 
+            // SQLite keeps some of the season graph on restrictive foreign keys
+            // (notably ranking snapshots and scores), so we remove dependent rows
+            // explicitly before deleting the season itself.
+            var teams = (await _unitOfWork.Teams.FindAsync(t => t.SeasonId == id)).ToList();
+            var categories = (await _unitOfWork.Categories.FindAsync(c => c.SeasonId == id)).ToList();
+            var rankingSnapshots = (await _unitOfWork.RankingSnapshots.FindAsync(rs => rs.SeasonId == id)).ToList();
+
+            var teamIds = teams.Select(t => t.Id).ToHashSet();
+            var categoryIds = categories.Select(c => c.Id).ToHashSet();
+            var scores = (await _unitOfWork.Scores.GetAllAsync())
+                .Where(score => teamIds.Contains(score.TeamId) || categoryIds.Contains(score.CategoryId))
+                .ToList();
+
+            foreach (var score in scores)
+            {
+                _unitOfWork.Scores.Delete(score);
+            }
+
+            foreach (var snapshot in rankingSnapshots)
+            {
+                _unitOfWork.RankingSnapshots.Delete(snapshot);
+            }
+
+            foreach (var team in teams)
+            {
+                _unitOfWork.Teams.Delete(team);
+            }
+
+            foreach (var category in categories)
+            {
+                _unitOfWork.Categories.Delete(category);
+            }
+
             _unitOfWork.Seasons.Delete(season);
             await _unitOfWork.SaveChangesAsync();
             return true;
