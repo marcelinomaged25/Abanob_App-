@@ -4776,11 +4776,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\projects\\abanob\\backend\\src\\AbanobLeague.API\\AbanobLeague.API.csproj",
+      "projectUniqueName": "E:\\marc\\projects\\abanob\\backend\\src\\AbanobLeague.API\\AbanobLeague.API.csproj",
       "projectName": "AbanobLeague.API",
-      "projectPath": "E:\\projects\\abanob\\backend\\src\\AbanobLeague.API\\AbanobLeague.API.csproj",
+      "projectPath": "E:\\marc\\projects\\abanob\\backend\\src\\AbanobLeague.API\\AbanobLeague.API.csproj",
       "packagesPath": "C:\\Users\\abano\\.nuget\\packages\\",
-      "outputPath": "E:\\projects\\abanob\\backend\\src\\AbanobLeague.API\\obj\\",
+      "outputPath": "E:\\marc\\projects\\abanob\\backend\\src\\AbanobLeague.API\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\abano\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -4795,11 +4795,11 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "E:\\projects\\abanob\\backend\\src\\AbanobLeague.Application\\AbanobLeague.Application.csproj": {
-              "projectPath": "E:\\projects\\abanob\\backend\\src\\AbanobLeague.Application\\AbanobLeague.Application.csproj"
+            "E:\\marc\\projects\\abanob\\backend\\src\\AbanobLeague.Application\\AbanobLeague.Application.csproj": {
+              "projectPath": "E:\\marc\\projects\\abanob\\backend\\src\\AbanobLeague.Application\\AbanobLeague.Application.csproj"
             },
-            "E:\\projects\\abanob\\backend\\src\\AbanobLeague.Infrastructure\\AbanobLeague.Infrastructure.csproj": {
-              "projectPath": "E:\\projects\\abanob\\backend\\src\\AbanobLeague.Infrastructure\\AbanobLeague.Infrastructure.csproj"
+            "E:\\marc\\projects\\abanob\\backend\\src\\AbanobLeague.Infrastructure\\AbanobLeague.Infrastructure.csproj": {
+              "projectPath": "E:\\marc\\projects\\abanob\\backend\\src\\AbanobLeague.Infrastructure\\AbanobLeague.Infrastructure.csproj"
             }
           }
         }

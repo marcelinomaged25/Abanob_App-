@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\projects\\abanob\\backend\\src\\AbanobLeague.Domain\\AbanobLeague.Domain.csproj": {}
+    "E:\\marc\\projects\\abanob\\backend\\src\\AbanobLeague.Domain\\AbanobLeague.Domain.csproj": {}
   },
   "projects": {
-    "E:\\projects\\abanob\\backend\\src\\AbanobLeague.Domain\\AbanobLeague.Domain.csproj": {
+    "E:\\marc\\projects\\abanob\\backend\\src\\AbanobLeague.Domain\\AbanobLeague.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\projects\\abanob\\backend\\src\\AbanobLeague.Domain\\AbanobLeague.Domain.csproj",
+        "projectUniqueName": "E:\\marc\\projects\\abanob\\backend\\src\\AbanobLeague.Domain\\AbanobLeague.Domain.csproj",
         "projectName": "AbanobLeague.Domain",
-        "projectPath": "E:\\projects\\abanob\\backend\\src\\AbanobLeague.Domain\\AbanobLeague.Domain.csproj",
+        "projectPath": "E:\\marc\\projects\\abanob\\backend\\src\\AbanobLeague.Domain\\AbanobLeague.Domain.csproj",
         "packagesPath": "C:\\Users\\abano\\.nuget\\packages\\",
-        "outputPath": "E:\\projects\\abanob\\backend\\src\\AbanobLeague.Domain\\obj\\",
+        "outputPath": "E:\\marc\\projects\\abanob\\backend\\src\\AbanobLeague.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\abano\\AppData\\Roaming\\NuGet\\NuGet.Config"

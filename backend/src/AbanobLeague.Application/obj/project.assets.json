@@ -588,11 +588,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\projects\\abanob\\backend\\src\\AbanobLeague.Application\\AbanobLeague.Application.csproj",
+      "projectUniqueName": "E:\\marc\\projects\\abanob\\backend\\src\\AbanobLeague.Application\\AbanobLeague.Application.csproj",
       "projectName": "AbanobLeague.Application",
-      "projectPath": "E:\\projects\\abanob\\backend\\src\\AbanobLeague.Application\\AbanobLeague.Application.csproj",
+      "projectPath": "E:\\marc\\projects\\abanob\\backend\\src\\AbanobLeague.Application\\AbanobLeague.Application.csproj",
       "packagesPath": "C:\\Users\\abano\\.nuget\\packages\\",
-      "outputPath": "E:\\projects\\abanob\\backend\\src\\AbanobLeague.Application\\obj\\",
+      "outputPath": "E:\\marc\\projects\\abanob\\backend\\src\\AbanobLeague.Application\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\abano\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -607,8 +607,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "E:\\projects\\abanob\\backend\\src\\AbanobLeague.Domain\\AbanobLeague.Domain.csproj": {
-              "projectPath": "E:\\projects\\abanob\\backend\\src\\AbanobLeague.Domain\\AbanobLeague.Domain.csproj"
+            "E:\\marc\\projects\\abanob\\backend\\src\\AbanobLeague.Domain\\AbanobLeague.Domain.csproj": {
+              "projectPath": "E:\\marc\\projects\\abanob\\backend\\src\\AbanobLeague.Domain\\AbanobLeague.Domain.csproj"
             }
           }
         }

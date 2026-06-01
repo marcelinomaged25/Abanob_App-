@@ -8,6 +8,6 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = AbanobLeague.Infrastructure
-build_property.ProjectDir = E:\projects\abanob\backend\src\AbanobLeague.Infrastructure\
+build_property.ProjectDir = E:\marc\projects\abanob\backend\src\AbanobLeague.Infrastructure\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 

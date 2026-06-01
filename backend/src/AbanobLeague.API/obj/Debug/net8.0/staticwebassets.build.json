@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "KSJ4R6qgdfT32e/dJP7tzgQ18FFr7a7e3/ZL7f4KlNI=",
+  "Hash": "VagoghDwWVjJb8AbxphOE8QjLRElNxKQpmnLZLKKV8o=",
   "Source": "AbanobLeague.API",
   "BasePath": "_content/AbanobLeague.API",
   "Mode": "Default",
@@ -10,7 +10,7 @@
     {
       "Name": "AbanobLeague.API\\wwwroot",
       "Source": "AbanobLeague.API",
-      "ContentRoot": "E:\\projects\\abanob\\backend\\src\\AbanobLeague.API\\wwwroot\\",
+      "ContentRoot": "E:\\marc\\projects\\abanob\\backend\\src\\AbanobLeague.API\\wwwroot\\",
       "BasePath": "_content/AbanobLeague.API",
       "Pattern": "**"
     }
