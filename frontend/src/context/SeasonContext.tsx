@@ -25,18 +25,13 @@ export const SeasonProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const data = await seasonService.getSeasons();
       setSeasons(data);
       
-      // Determine default selected season
-      // 1. Check if there is a saved season ID in localStorage
-      // 2. Otherwise use the active season
-      // 3. Otherwise use the first season
+      // Prefer the active season first so stale localStorage never overrides
+      // the season that the system currently considers active.
       const savedId = localStorage.getItem('selected_season_id');
       const active = data.find((s) => s.isActive);
+      const saved = savedId ? data.find((s) => s.id === savedId) : null;
       
-      let defaultSeason = active || data[0] || null;
-      if (savedId) {
-        const found = data.find((s) => s.id === savedId);
-        if (found) defaultSeason = found;
-      }
+      const defaultSeason = active || saved || data[0] || null;
 
       if (defaultSeason) {
         setSelectedSeason(defaultSeason);

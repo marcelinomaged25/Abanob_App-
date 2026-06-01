@@ -93,9 +93,7 @@ namespace AbanobLeague.Application.Services
             var season = await _unitOfWork.Seasons.GetByIdAsync(id);
             if (season == null) return false;
 
-            // SQLite keeps some of the season graph on restrictive foreign keys
-            // (notably ranking snapshots, scores, and member records), so we remove dependent rows
-            // explicitly before deleting the season itself.
+            // Delete in dependency order and persist each step so SQLite does not trip over FK timing.
             var teams = (await _unitOfWork.Teams.FindAsync(t => t.SeasonId == id)).ToList();
             var categories = (await _unitOfWork.Categories.FindAsync(c => c.SeasonId == id)).ToList();
             var rankingSnapshots = (await _unitOfWork.RankingSnapshots.FindAsync(rs => rs.SeasonId == id)).ToList();
@@ -115,31 +113,37 @@ namespace AbanobLeague.Application.Services
             {
                 _unitOfWork.MemberScores.Delete(memberScore);
             }
+            await _unitOfWork.SaveChangesAsync();
 
             foreach (var score in scores)
             {
                 _unitOfWork.Scores.Delete(score);
             }
+            await _unitOfWork.SaveChangesAsync();
 
             foreach (var snapshot in rankingSnapshots)
             {
                 _unitOfWork.RankingSnapshots.Delete(snapshot);
             }
-
-            foreach (var team in teams)
-            {
-                _unitOfWork.Teams.Delete(team);
-            }
+            await _unitOfWork.SaveChangesAsync();
 
             foreach (var member in teamMembers)
             {
                 _unitOfWork.TeamMembers.Delete(member);
             }
+            await _unitOfWork.SaveChangesAsync();
+
+            foreach (var team in teams)
+            {
+                _unitOfWork.Teams.Delete(team);
+            }
+            await _unitOfWork.SaveChangesAsync();
 
             foreach (var category in categories)
             {
                 _unitOfWork.Categories.Delete(category);
             }
+            await _unitOfWork.SaveChangesAsync();
 
             _unitOfWork.Seasons.Delete(season);
             await _unitOfWork.SaveChangesAsync();

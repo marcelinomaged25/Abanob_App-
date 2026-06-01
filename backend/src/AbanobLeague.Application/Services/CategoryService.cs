@@ -73,12 +73,14 @@ namespace AbanobLeague.Application.Services
             {
                 _unitOfWork.MemberScores.Delete(memberScore);
             }
+            await _unitOfWork.SaveChangesAsync();
 
             var scores = (await _unitOfWork.Scores.FindAsync(s => s.CategoryId == id)).ToList();
             foreach (var score in scores)
             {
                 _unitOfWork.Scores.Delete(score);
             }
+            await _unitOfWork.SaveChangesAsync();
 
             _unitOfWork.Categories.Delete(category);
             await _unitOfWork.SaveChangesAsync();

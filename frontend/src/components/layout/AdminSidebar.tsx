@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useSeasonContext } from '@/context/SeasonContext';
 import { 
   LayoutDashboard, Calendar, Users, ListPlus, 
   FileText, History, LogOut, ArrowLeftRight 
@@ -8,6 +9,7 @@ import {
 
 export const AdminSidebar: React.FC = () => {
   const { user, logoutUser } = useAuth();
+  const { seasons, selectedSeasonId, setSelectedSeasonId, selectedSeason } = useSeasonContext();
   const location = useLocation();
 
   const isLinkActive = (path: string) => location.pathname === path;
@@ -55,6 +57,30 @@ export const AdminSidebar: React.FC = () => {
               <span className="text-xs font-bold text-white truncate">{user?.fullName || 'أدمن النظام'}</span>
               <span className="text-[10px] text-brand-gold-400 font-semibold uppercase">{user?.role === 'SuperAdmin' ? 'سوبر أدمن' : 'أدمن'}</span>
             </div>
+          </div>
+        </div>
+
+        {/* Season Switcher */}
+        <div className="px-3 pb-3">
+          <div className="rounded-xl border border-brand-gold-500/20 bg-slate-950/30 p-3 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10px] font-black text-slate-400">الموسم الحالي</span>
+              <span className="text-[10px] font-extrabold text-brand-gold-400 truncate">{selectedSeason?.name || 'لا يوجد'}</span>
+            </div>
+            <select
+              value={selectedSeasonId}
+              onChange={(e) => setSelectedSeasonId(e.target.value)}
+              className="w-full h-9 rounded-lg border border-slate-800 bg-slate-950 px-3 text-[10px] font-bold text-slate-200 outline-none focus:border-brand-gold-500"
+            >
+              {seasons.map((season) => (
+                <option key={season.id} value={season.id}>
+                  {season.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-[10px] leading-4 text-slate-500">
+              اختر الموسم يدويًا ثم انتقل لأي صفحة داخل الإدارة. كل الجداول ستقرأ الموسم المختار مباشرة.
+            </p>
           </div>
         </div>
 
