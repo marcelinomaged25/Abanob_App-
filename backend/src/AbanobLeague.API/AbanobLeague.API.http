@@ -1,0 +1,6 @@
+@AbanobLeague.API_HostAddress = http://localhost:5102
+
+GET {{AbanobLeague.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

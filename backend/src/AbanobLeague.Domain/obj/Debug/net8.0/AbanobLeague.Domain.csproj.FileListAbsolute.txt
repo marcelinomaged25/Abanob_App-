@@ -1,0 +1,11 @@
+E:\projects\abanob\backend\src\AbanobLeague.Domain\bin\Debug\net8.0\AbanobLeague.Domain.deps.json
+E:\projects\abanob\backend\src\AbanobLeague.Domain\bin\Debug\net8.0\AbanobLeague.Domain.dll
+E:\projects\abanob\backend\src\AbanobLeague.Domain\bin\Debug\net8.0\AbanobLeague.Domain.pdb
+E:\projects\abanob\backend\src\AbanobLeague.Domain\obj\Debug\net8.0\AbanobLeague.Domain.GeneratedMSBuildEditorConfig.editorconfig
+E:\projects\abanob\backend\src\AbanobLeague.Domain\obj\Debug\net8.0\AbanobLeague.Domain.AssemblyInfoInputs.cache
+E:\projects\abanob\backend\src\AbanobLeague.Domain\obj\Debug\net8.0\AbanobLeague.Domain.AssemblyInfo.cs
+E:\projects\abanob\backend\src\AbanobLeague.Domain\obj\Debug\net8.0\AbanobLeague.Domain.csproj.CoreCompileInputs.cache
+E:\projects\abanob\backend\src\AbanobLeague.Domain\obj\Debug\net8.0\AbanobLeague.Domain.dll
+E:\projects\abanob\backend\src\AbanobLeague.Domain\obj\Debug\net8.0\refint\AbanobLeague.Domain.dll
+E:\projects\abanob\backend\src\AbanobLeague.Domain\obj\Debug\net8.0\AbanobLeague.Domain.pdb
+E:\projects\abanob\backend\src\AbanobLeague.Domain\obj\Debug\net8.0\ref\AbanobLeague.Domain.dll

@@ -1,0 +1,84 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using AbanobLeague.Application.DTOs.HallOfFame;
+using AbanobLeague.Application.Interfaces;
+using AbanobLeague.Domain.Entities;
+using AbanobLeague.Domain.Interfaces;
+
+namespace AbanobLeague.Application.Services
+{
+    public class HallOfFameService : IHallOfFameService
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IRankingService _rankingService;
+
+        public HallOfFameService(IUnitOfWork unitOfWork, IRankingService rankingService)
+        {
+            _unitOfWork = unitOfWork;
+            _rankingService = rankingService;
+        }
+
+        public async Task<HallOfFameDto> GetHallOfFameAsync(Guid seasonId)
+        {
+            var standings = await _rankingService.GetStandingsAsync(seasonId);
+            var leadingRow = standings.Rows.FirstOrDefault();
+
+            BestTeamDto? bestTeam = null;
+            if (leadingRow != null)
+            {
+                bestTeam = new BestTeamDto
+                {
+                    TeamId = leadingRow.TeamId,
+                    TeamName = leadingRow.TeamName,
+                    TotalScore = leadingRow.TotalScore,
+                    LogoUrl = leadingRow.LogoUrl,
+                    Trophy = "🏆 الكأس الذهبي لدوري القديس أبانوب"
+                };
+            }
+
+            var categories = (await _unitOfWork.Categories.FindAsync(c => c.SeasonId == seasonId))
+                .OrderBy(c => c.Order)
+                .ToList();
+
+            var allScores = await _unitOfWork.Scores.GetAllAsync();
+            var scoresList = allScores.Where(s => categories.Select(c => c.Id).Contains(s.CategoryId)).ToList();
+
+            var teams = await _unitOfWork.Teams.FindAsync(t => t.SeasonId == seasonId);
+            var teamMap = teams.ToDictionary(t => t.Id);
+
+            var champions = new List<CategoryChampionDto>();
+
+            foreach (var cat in categories)
+            {
+                var catScores = scoresList
+                    .Where(s => s.CategoryId == cat.Id)
+                    .OrderByDescending(s => s.ScoreValue)
+                    .ToList();
+
+                var topScore = catScores.FirstOrDefault();
+                if (topScore != null && teamMap.TryGetValue(topScore.TeamId, out var champTeam))
+                {
+                    champions.Add(new CategoryChampionDto
+                    {
+                        CategoryId = cat.Id,
+                        CategoryName = cat.Name,
+                        TeamId = champTeam.Id,
+                        TeamName = champTeam.Name,
+                        LogoUrl = champTeam.LogoUrl,
+                        ScoreValue = topScore.ScoreValue,
+                        MaxScore = cat.MaxScore,
+                        Medal = $"🥇 بطل فئة {cat.Name}"
+                    });
+                }
+            }
+
+            return new HallOfFameDto
+            {
+                BestTeamOverall = bestTeam,
+                CategoryChampions = champions
+            };
+        }
+    }
+}
