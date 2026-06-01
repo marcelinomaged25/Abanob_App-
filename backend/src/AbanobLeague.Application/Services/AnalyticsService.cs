@@ -20,14 +20,9 @@ namespace AbanobLeague.Application.Services
 
         public async Task<AnalyticsDto> GetAnalyticsAsync(Guid seasonId)
         {
-            var teams = (await _unitOfWork.Teams.FindAsync(t => t.SeasonId == seasonId)).ToList();
-            var categories = (await _unitOfWork.Categories.FindAsync(c => c.SeasonId == seasonId)).ToList();
-            var allScores = await _unitOfWork.Scores.GetAllAsync();
-            var catIds = categories.Select(c => c.Id).ToHashSet();
-            var scores = allScores.Where(s => catIds.Contains(s.CategoryId)).ToList();
-
-            var teamScoresMap = scores.GroupBy(s => s.TeamId).ToDictionary(g => g.Key, g => g.ToList());
-            var categoryScoresMap = scores.GroupBy(s => s.CategoryId).ToDictionary(g => g.Key, g => g.ToList());
+            var scoringData = await SeasonScoreHelper.LoadAsync(_unitOfWork, seasonId);
+            var teams = scoringData.Teams;
+            var categories = scoringData.Categories;
 
             if (!teams.Any() || !categories.Any())
             {
@@ -37,10 +32,10 @@ namespace AbanobLeague.Application.Services
             // Calculate total scores per team
             var teamTotals = teams.Select(t =>
             {
-                teamScoresMap.TryGetValue(t.Id, out var ts);
-                ts ??= new List<Score>();
-                int total = ts.Sum(s => s.ScoreValue);
-                return new { Team = t, Total = total, Scores = ts };
+                scoringData.CombinedCategoryScoresByTeamId.TryGetValue(t.Id, out var byCategory);
+                byCategory ??= new Dictionary<Guid, int>();
+                int total = byCategory.Values.Sum();
+                return new { Team = t, Total = total, Scores = byCategory };
             }).ToList();
 
             // Highest & Lowest Scoring Teams
@@ -87,9 +82,9 @@ namespace AbanobLeague.Application.Services
                 // Standard deviation of scores as percentages of max scores
                 var percentages = tt.Scores.Select(s =>
                 {
-                    var cat = categories.FirstOrDefault(c => c.Id == s.CategoryId);
+                    var cat = categories.FirstOrDefault(c => c.Id == s.Key);
                     if (cat == null || cat.MaxScore == 0) return 0.0;
-                    return ((double)s.ScoreValue / cat.MaxScore) * 100;
+                    return ((double)s.Value / cat.MaxScore) * 100;
                 }).ToList();
 
                 double mean = percentages.Average();
@@ -127,13 +122,14 @@ namespace AbanobLeague.Application.Services
 
             foreach (var cat in categories)
             {
-                categoryScoresMap.TryGetValue(cat.Id, out var catScores);
-                catScores ??= new List<Score>();
+                var catScores = teamTotals
+                    .Select(tt => tt.Scores.TryGetValue(cat.Id, out var score) ? score : 0)
+                    .ToList();
 
                 if (!catScores.Any()) continue;
 
                 // Average score
-                double avg = catScores.Average(s => s.ScoreValue);
+                double avg = catScores.Average();
                 double avgPercentage = cat.MaxScore > 0 ? (avg / cat.MaxScore) * 100 : 0;
 
                 catAverages.Add(new CategoryAverageDto
@@ -159,16 +155,10 @@ namespace AbanobLeague.Application.Services
                 // Competitive score standard deviation across teams
                 // We want to verify how close the teams are in this category.
                 // Gather scores of all teams in this category (fill with 0 for teams with no score)
-                var teamScoresInCat = teams.Select(t =>
+                if (catScores.Count > 1)
                 {
-                    var match = catScores.FirstOrDefault(s => s.TeamId == t.Id);
-                    return match?.ScoreValue ?? 0;
-                }).ToList();
-
-                if (teamScoresInCat.Count > 1)
-                {
-                    double catMean = teamScoresInCat.Average();
-                    double catVar = teamScoresInCat.Select(v => Math.Pow(v - catMean, 2)).Sum() / teamScoresInCat.Count;
+                    double catMean = catScores.Average();
+                    double catVar = catScores.Select(v => Math.Pow(v - catMean, 2)).Sum() / catScores.Count;
                     double catStdDev = Math.Sqrt(catVar);
 
                     if (catStdDev < minCatStdDev)
@@ -191,12 +181,12 @@ namespace AbanobLeague.Application.Services
                 var list = new List<CategoryScoreValueDto>();
                 foreach (var cat in categories)
                 {
-                    var match = tt.Scores.FirstOrDefault(s => s.CategoryId == cat.Id);
+                    tt.Scores.TryGetValue(cat.Id, out var match);
                     list.Add(new CategoryScoreValueDto
                     {
                         CategoryId = cat.Id,
                         CategoryName = cat.Name,
-                        ScoreValue = match?.ScoreValue ?? 0
+                        ScoreValue = match
                     });
                 }
 

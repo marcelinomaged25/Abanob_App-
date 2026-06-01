@@ -17,6 +17,7 @@ import { ManageSeasonsPage } from '@/pages/admin/ManageSeasonsPage'
 import { ManageTeamsPage } from '@/pages/admin/ManageTeamsPage'
 import { ManageCategoriesPage } from '@/pages/admin/ManageCategoriesPage'
 import { ManageScoresPage } from '@/pages/admin/ManageScoresPage'
+import { ManageMemberScoresPage } from '@/pages/admin/ManageMemberScoresPage'
 import { AuditLogsPage } from '@/pages/admin/AuditLogsPage'
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
         <Route path="/admin/teams" element={<ManageTeamsPage />} />
         <Route path="/admin/categories" element={<ManageCategoriesPage />} />
         <Route path="/admin/scores" element={<ManageScoresPage />} />
+        <Route path="/admin/member-scores" element={<ManageMemberScoresPage />} />
         <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
       </Route>
     </Routes>

@@ -1,5 +1,5 @@
 import api from './api';
-import type { Team } from '@/types';
+import type { Team, TeamProfile } from '@/types';
 
 export const getTeams = async (seasonId?: string): Promise<Team[]> => {
   const url = seasonId ? `/teams?seasonId=${seasonId}` : '/teams';
@@ -12,8 +12,8 @@ export const getTeamById = async (id: string): Promise<Team> => {
   return response.data;
 };
 
-export const getTeamProfile = async (id: string): Promise<any> => {
-  const response = await api.get<any>(`/teams/${id}/profile`);
+export const getTeamProfile = async (id: string): Promise<TeamProfile> => {
+  const response = await api.get<TeamProfile>(`/teams/${id}/profile`);
   return response.data;
 };
 

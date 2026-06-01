@@ -68,6 +68,12 @@ namespace AbanobLeague.Application.Services
             var category = await _unitOfWork.Categories.GetByIdAsync(id);
             if (category == null) return false;
 
+            var memberScores = (await _unitOfWork.MemberScores.FindAsync(s => s.CategoryId == id)).ToList();
+            foreach (var memberScore in memberScores)
+            {
+                _unitOfWork.MemberScores.Delete(memberScore);
+            }
+
             var scores = (await _unitOfWork.Scores.FindAsync(s => s.CategoryId == id)).ToList();
             foreach (var score in scores)
             {

@@ -20,6 +20,7 @@ export const ManageTeamsPage: React.FC = () => {
   // Form Fields
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [memberNamesInput, setMemberNamesInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Logo Upload Fields
@@ -32,6 +33,7 @@ export const ManageTeamsPage: React.FC = () => {
     setEditingTeam(null);
     setName('');
     setDescription('');
+    setMemberNamesInput('');
     setModalOpen(true);
   };
 
@@ -39,6 +41,7 @@ export const ManageTeamsPage: React.FC = () => {
     setEditingTeam(team);
     setName(team.name);
     setDescription(team.description);
+    setMemberNamesInput('');
     setModalOpen(true);
   };
 
@@ -51,11 +54,23 @@ export const ManageTeamsPage: React.FC = () => {
       description,
       logoUrl: editingTeam ? editingTeam.logoUrl : '/uploads/logos/default-team.png',
       seasonId: selectedSeasonId,
+      memberNames: memberNamesInput
+        .split('\n')
+        .map((item) => item.trim())
+        .filter(Boolean),
     };
 
     try {
       if (editingTeam) {
-        await updateTeam(editingTeam.id, { id: editingTeam.id, ...payload });
+        const updatePayload = {
+          id: editingTeam.id,
+          name: payload.name,
+          description: payload.description,
+          logoUrl: payload.logoUrl,
+          seasonId: payload.seasonId,
+          memberNames: payload.memberNames.length > 0 ? payload.memberNames : undefined,
+        };
+        await updateTeam(editingTeam.id, updatePayload);
       } else {
         await createTeam(payload);
       }
@@ -183,7 +198,12 @@ export const ManageTeamsPage: React.FC = () => {
 
                     {/* Team Name */}
                     <td className="py-4 px-6 font-extrabold text-slate-900 dark:text-white">
-                      {team.name}
+                      <div className="flex flex-col gap-1">
+                        <span>{team.name}</span>
+                        <span className="text-[10px] font-semibold text-slate-400">
+                          {team.memberCount ?? 0} أفراد
+                        </span>
+                      </div>
                     </td>
 
                     {/* Description */}
@@ -274,6 +294,25 @@ export const ManageTeamsPage: React.FC = () => {
                   rows={3}
                   className="w-full p-3.5 text-xs bg-slate-50 border border-slate-200 text-slate-800 dark:bg-brand-navy-950 dark:border-brand-navy-850 dark:text-slate-100 rounded-xl"
                 />
+              </div>
+
+              {/* Members */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-slate-600 dark:text-slate-300">
+                  أسماء أفراد الفريق
+                </label>
+                <textarea
+                  value={memberNamesInput}
+                  onChange={(e) => setMemberNamesInput(e.target.value)}
+                  placeholder="اكتب اسم كل فرد في سطر مستقل، حتى 10 أفراد."
+                  rows={4}
+                  className="w-full p-3.5 text-xs bg-slate-50 border border-slate-200 text-slate-800 dark:bg-brand-navy-950 dark:border-brand-navy-850 dark:text-slate-100 rounded-xl"
+                />
+                <p className="text-[10px] text-slate-400">
+                  {editingTeam
+                    ? 'اتركها فارغة إذا كنت لا تريد تغيير الأفراد الحاليين.'
+                    : 'يمكنك إضافة حتى 10 أفراد للفريق الجديد.'}
+                </p>
               </div>
 
               {/* Action Buttons */}

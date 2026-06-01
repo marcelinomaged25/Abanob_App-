@@ -21,32 +21,27 @@ namespace AbanobLeague.Application.Services
 
         public async Task<StandingsDto> GetStandingsAsync(Guid seasonId)
         {
-            var categories = (await _unitOfWork.Categories.FindAsync(c => c.SeasonId == seasonId))
+            var scoringData = await SeasonScoreHelper.LoadAsync(_unitOfWork, seasonId);
+            var categories = scoringData.Categories
                 .OrderBy(c => c.Order)
                 .Select(c => c.ToDto())
                 .ToList();
-
-            var teams = await _unitOfWork.Teams.FindAsync(t => t.SeasonId == seasonId);
-            var teamsList = teams.ToList();
-
-            var allScores = await _unitOfWork.Scores.GetAllAsync();
-            var scoresList = allScores.Where(s => categories.Select(c => c.Id).Contains(s.CategoryId)).ToList();
-            var teamScoresMap = scoresList.GroupBy(s => s.TeamId).ToDictionary(g => g.Key, g => g.ToList());
+            var teamsList = scoringData.Teams;
 
             var rows = new List<StandingsRowDto>();
 
             foreach (var team in teamsList)
             {
-                teamScoresMap.TryGetValue(team.Id, out var teamScores);
-                teamScores ??= new List<Score>();
+                var categoryScoresById = scoringData.CombinedCategoryScoresByTeamId.TryGetValue(team.Id, out var teamScores)
+                    ? teamScores
+                    : new Dictionary<Guid, int>();
 
                 var catScores = new List<StandingsCategoryScoreDto>();
                 int totalScore = 0;
 
                 foreach (var cat in categories)
                 {
-                    var score = teamScores.FirstOrDefault(s => s.CategoryId == cat.Id);
-                    int val = score?.ScoreValue ?? 0;
+                    int val = categoryScoresById.TryGetValue(cat.Id, out var scoreValue) ? scoreValue : 0;
                     totalScore += val;
 
                     catScores.Add(new StandingsCategoryScoreDto

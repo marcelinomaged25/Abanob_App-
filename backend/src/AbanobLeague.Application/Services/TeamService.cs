@@ -23,10 +23,14 @@ namespace AbanobLeague.Application.Services
         {
             var teams = await _unitOfWork.Teams.FindAsync(t => t.SeasonId == seasonId);
             var season = await _unitOfWork.Seasons.GetByIdAsync(seasonId);
+            var members = await _unitOfWork.TeamMembers.FindAsync(m => teams.Select(t => t.Id).Contains(m.TeamId));
+            var memberCounts = members.GroupBy(m => m.TeamId).ToDictionary(g => g.Key, g => g.Count());
 
             return teams.Select(t => {
                 t.Season = season;
-                return t.ToDto();
+                var dto = t.ToDto();
+                dto.MemberCount = memberCounts.TryGetValue(t.Id, out var count) ? count : 0;
+                return dto;
             }).OrderBy(t => t.Name);
         }
 
@@ -36,12 +40,24 @@ namespace AbanobLeague.Application.Services
             if (team != null)
             {
                 team.Season = await _unitOfWork.Seasons.GetByIdAsync(team.SeasonId);
+                team.Members = (await _unitOfWork.TeamMembers.FindAsync(m => m.TeamId == team.Id)).ToList();
             }
-            return team?.ToDto();
+            var dto = team?.ToDto();
+            if (dto != null)
+            {
+                dto.MemberCount = team?.Members.Count ?? 0;
+            }
+            return dto;
         }
 
         public async Task<TeamDto> CreateTeamAsync(CreateTeamDto dto, string? logoUrl = null)
         {
+            var memberNames = NormalizeMemberNames(dto.MemberNames);
+            if (memberNames.Count > 10)
+            {
+                throw new ArgumentException("A team can have at most 10 members.");
+            }
+
             var team = new Team
             {
                 Id = Guid.NewGuid(),
@@ -53,10 +69,14 @@ namespace AbanobLeague.Application.Services
             };
 
             await _unitOfWork.Teams.AddAsync(team);
+            await AddMembersAsync(team.Id, memberNames);
             await _unitOfWork.SaveChangesAsync();
 
             team.Season = await _unitOfWork.Seasons.GetByIdAsync(team.SeasonId);
-            return team.ToDto();
+            team.Members = (await _unitOfWork.TeamMembers.FindAsync(m => m.TeamId == team.Id)).ToList();
+            var result = team.ToDto();
+            result.MemberCount = team.Members.Count;
+            return result;
         }
 
         public async Task<TeamDto?> UpdateTeamAsync(Guid id, UpdateTeamDto dto, string? logoUrl = null)
@@ -72,16 +92,51 @@ namespace AbanobLeague.Application.Services
             }
 
             _unitOfWork.Teams.Update(team);
+
+            if (dto.MemberNames != null)
+            {
+                var memberNames = NormalizeMemberNames(dto.MemberNames);
+                if (memberNames.Count > 10)
+                {
+                    throw new ArgumentException("A team can have at most 10 members.");
+                }
+
+                await ReplaceMembersAsync(team.Id, memberNames);
+            }
+
             await _unitOfWork.SaveChangesAsync();
 
             team.Season = await _unitOfWork.Seasons.GetByIdAsync(team.SeasonId);
-            return team.ToDto();
+            team.Members = (await _unitOfWork.TeamMembers.FindAsync(m => m.TeamId == team.Id)).ToList();
+            var result = team.ToDto();
+            result.MemberCount = team.Members.Count;
+            return result;
         }
 
         public async Task<bool> DeleteTeamAsync(Guid id)
         {
             var team = await _unitOfWork.Teams.GetByIdAsync(id);
             if (team == null) return false;
+
+            var members = (await _unitOfWork.TeamMembers.FindAsync(m => m.TeamId == id)).ToList();
+            var memberIds = members.Select(m => m.Id).ToHashSet();
+            var scores = (await _unitOfWork.MemberScores.GetAllAsync())
+                .Where(score => memberIds.Contains(score.TeamMemberId))
+                .ToList();
+            foreach (var score in scores)
+            {
+                _unitOfWork.MemberScores.Delete(score);
+            }
+            foreach (var member in members)
+            {
+                _unitOfWork.TeamMembers.Delete(member);
+            }
+
+            var teamScores = (await _unitOfWork.Scores.FindAsync(s => s.TeamId == id)).ToList();
+            foreach (var score in teamScores)
+            {
+                _unitOfWork.Scores.Delete(score);
+            }
 
             _unitOfWork.Teams.Delete(team);
             await _unitOfWork.SaveChangesAsync();
@@ -96,17 +151,11 @@ namespace AbanobLeague.Application.Services
             var season = await _unitOfWork.Seasons.GetByIdAsync(team.SeasonId);
             var categoriesList = (await _unitOfWork.Categories.FindAsync(c => c.SeasonId == team.SeasonId))
                 .OrderBy(c => c.Order).ToList();
-            
-            // Get all teams in this season to compute ranking
-            var allTeams = await _unitOfWork.Teams.FindAsync(t => t.SeasonId == team.SeasonId);
-            var allScores = await _unitOfWork.Scores.GetAllAsync();
-            var teamScoresMap = allScores
-                .GroupBy(s => s.TeamId)
-                .ToDictionary(g => g.Key, g => g.ToList());
+            var scoringData = await SeasonScoreHelper.LoadAsync(_unitOfWork, team.SeasonId);
+            var allTeams = scoringData.Teams;
 
             var rankings = allTeams.Select(t => {
-                var list = teamScoresMap.TryGetValue(t.Id, out var s) ? s : new List<Score>();
-                var total = list.Sum(x => x.ScoreValue);
+                var total = scoringData.CombinedTotalsByTeamId.TryGetValue(t.Id, out var combined) ? combined : 0;
                 return new { TeamId = t.Id, TotalScore = total };
             })
             .OrderByDescending(r => r.TotalScore)
@@ -114,9 +163,20 @@ namespace AbanobLeague.Application.Services
 
             int rank = rankings.FindIndex(r => r.TeamId == id) + 1;
             int totalScore = rankings.FirstOrDefault(r => r.TeamId == id)?.TotalScore ?? 0;
+            int teamScoreTotal = (await _unitOfWork.Scores.FindAsync(s => s.TeamId == id && categoriesList.Select(c => c.Id).Contains(s.CategoryId))).Sum(s => s.ScoreValue);
+
+            var teamMembers = (await _unitOfWork.TeamMembers.FindAsync(m => m.TeamId == id))
+                .OrderBy(m => m.DisplayOrder)
+                .ThenBy(m => m.FullName)
+                .ToList();
+            var memberScores = (await _unitOfWork.MemberScores.GetAllAsync())
+                .Where(s => teamMembers.Select(m => m.Id).Contains(s.TeamMemberId) && categoriesList.Select(c => c.Id).Contains(s.CategoryId))
+                .ToList();
+            var memberScoreMap = memberScores.GroupBy(s => s.TeamMemberId).ToDictionary(g => g.Key, g => g.ToList());
+            var memberScoreTotal = memberScores.Sum(s => s.ScoreValue);
 
             // Prepare Category Breakdown
-            var teamScores = teamScoresMap.TryGetValue(id, out var ts) ? ts : new List<Score>();
+            var teamScores = (await _unitOfWork.Scores.FindAsync(s => s.TeamId == id && categoriesList.Select(c => c.Id).Contains(s.CategoryId))).ToList();
             var categoryBreakdown = new List<CategoryScoreDto>();
 
             foreach (var cat in categoriesList)
@@ -136,6 +196,16 @@ namespace AbanobLeague.Application.Services
                 });
             }
 
+            var memberDtos = teamMembers.Select(member => new TeamMemberDto
+            {
+                Id = member.Id,
+                TeamId = member.TeamId,
+                TeamName = team.Name,
+                FullName = member.FullName,
+                DisplayOrder = member.DisplayOrder,
+                TotalScore = memberScoreMap.TryGetValue(member.Id, out var list) ? list.Sum(s => s.ScoreValue) : 0
+            }).ToList();
+
             return new TeamProfileDto
             {
                 Id = team.Id,
@@ -146,8 +216,62 @@ namespace AbanobLeague.Application.Services
                 SeasonName = season?.Name ?? string.Empty,
                 Rank = rank,
                 TotalScore = totalScore,
+                TeamScoreTotal = teamScoreTotal,
+                MemberScoreTotal = memberScoreTotal,
                 CategoryScores = categoryBreakdown
+                ,
+                Members = memberDtos
             };
+        }
+
+        private async Task AddMembersAsync(Guid teamId, List<string> memberNames)
+        {
+            if (memberNames.Count == 0) return;
+
+            for (var i = 0; i < memberNames.Count; i++)
+            {
+                await _unitOfWork.TeamMembers.AddAsync(new TeamMember
+                {
+                    Id = Guid.NewGuid(),
+                    TeamId = teamId,
+                    FullName = memberNames[i],
+                    DisplayOrder = i + 1,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+        }
+
+        private async Task ReplaceMembersAsync(Guid teamId, List<string> memberNames)
+        {
+            var existingMembers = (await _unitOfWork.TeamMembers.FindAsync(m => m.TeamId == teamId)).ToList();
+            var existingMemberIds = existingMembers.Select(m => m.Id).ToHashSet();
+
+            var existingScores = (await _unitOfWork.MemberScores.GetAllAsync())
+                .Where(s => existingMemberIds.Contains(s.TeamMemberId))
+                .ToList();
+
+            foreach (var score in existingScores)
+            {
+                _unitOfWork.MemberScores.Delete(score);
+            }
+
+            foreach (var member in existingMembers)
+            {
+                _unitOfWork.TeamMembers.Delete(member);
+            }
+
+            await AddMembersAsync(teamId, memberNames);
+        }
+
+        private static List<string> NormalizeMemberNames(List<string>? memberNames)
+        {
+            if (memberNames == null) return new List<string>();
+
+            return memberNames
+                .Select(name => name?.Trim())
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList()!;
         }
     }
 }

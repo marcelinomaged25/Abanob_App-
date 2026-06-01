@@ -42,18 +42,16 @@ namespace AbanobLeague.Application.Services
                 .OrderBy(c => c.Order)
                 .ToList();
 
-            var allScores = await _unitOfWork.Scores.GetAllAsync();
-            var scoresList = allScores.Where(s => categories.Select(c => c.Id).Contains(s.CategoryId)).ToList();
-
-            var teams = await _unitOfWork.Teams.FindAsync(t => t.SeasonId == seasonId);
-            var teamMap = teams.ToDictionary(t => t.Id);
+            var scoringData = await SeasonScoreHelper.LoadAsync(_unitOfWork, seasonId);
+            var teamMap = scoringData.Teams.ToDictionary(t => t.Id);
 
             var champions = new List<CategoryChampionDto>();
 
             foreach (var cat in categories)
             {
-                var catScores = scoresList
-                    .Where(s => s.CategoryId == cat.Id)
+                var catScores = scoringData.CombinedCategoryScoresByTeamId
+                    .Select(item => new { TeamId = item.Key, ScoreValue = item.Value.TryGetValue(cat.Id, out var val) ? val : 0 })
+                    .Where(x => x.ScoreValue > 0)
                     .OrderByDescending(s => s.ScoreValue)
                     .ToList();
 

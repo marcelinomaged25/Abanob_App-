@@ -28,7 +28,7 @@ export const HomePage: React.FC = () => {
           <div className="flex-1 space-y-4 text-right">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-brand-gold-500/10 text-brand-gold-400 border border-brand-gold-500/20">
               <Sparkles className="h-3.5 w-3.5" />
-              <span>دوري القديس أبانوب للشباب</span>
+              <span> دوري القديس أبانوب </span>
             </div>
             
             <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">

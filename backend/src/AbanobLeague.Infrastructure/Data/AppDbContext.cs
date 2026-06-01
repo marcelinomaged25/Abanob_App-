@@ -13,8 +13,10 @@ namespace AbanobLeague.Infrastructure.Data
 
         public DbSet<Season> Seasons => Set<Season>();
         public DbSet<Team> Teams => Set<Team>();
+        public DbSet<TeamMember> TeamMembers => Set<TeamMember>();
         public DbSet<Category> Categories => Set<Category>();
         public DbSet<Score> Scores => Set<Score>();
+        public DbSet<MemberScore> MemberScores => Set<MemberScore>();
         public DbSet<AdminUser> AdminUsers => Set<AdminUser>();
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
         public DbSet<RankingSnapshot> RankingSnapshots => Set<RankingSnapshot>();
@@ -43,6 +45,20 @@ namespace AbanobLeague.Infrastructure.Data
                     .WithMany(s => s.Teams)
                     .HasForeignKey(t => t.SeasonId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(t => t.Members)
+                    .WithOne(m => m.Team)
+                    .HasForeignKey(m => m.TeamId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Team Member Configuration
+            modelBuilder.Entity<TeamMember>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.FullName).IsRequired().HasMaxLength(150);
+
+                entity.HasIndex(e => new { e.TeamId, e.DisplayOrder });
             });
 
             // Category Configuration
@@ -75,6 +91,25 @@ namespace AbanobLeague.Infrastructure.Data
                     
                 // Unique index to prevent duplicate scores for team + category
                 entity.HasIndex(s => new { s.TeamId, s.CategoryId }).IsUnique();
+            });
+
+            // Member Score Configuration
+            modelBuilder.Entity<MemberScore>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Notes).HasMaxLength(500);
+
+                entity.HasOne(ms => ms.TeamMember)
+                    .WithMany(m => m.Scores)
+                    .HasForeignKey(ms => ms.TeamMemberId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(ms => ms.Category)
+                    .WithMany()
+                    .HasForeignKey(ms => ms.CategoryId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(ms => new { ms.TeamMemberId, ms.CategoryId }).IsUnique();
             });
 
             // AdminUser Configuration

@@ -4,6 +4,7 @@ using AbanobLeague.Application.DTOs.Seasons;
 using AbanobLeague.Application.DTOs.Teams;
 using AbanobLeague.Application.DTOs.Categories;
 using AbanobLeague.Application.DTOs.Scores;
+using AbanobLeague.Application.DTOs.MemberScores;
 using AbanobLeague.Application.DTOs.Audit;
 
 namespace AbanobLeague.Application.Mappings
@@ -36,7 +37,21 @@ namespace AbanobLeague.Application.Mappings
                 Description = team.Description,
                 SeasonId = team.SeasonId,
                 SeasonName = team.Season?.Name ?? string.Empty,
+                MemberCount = team.Members?.Count ?? 0,
                 CreatedAt = team.CreatedAt
+            };
+        }
+
+        public static TeamMemberDto ToDto(this TeamMember member)
+        {
+            if (member == null) throw new ArgumentNullException(nameof(member));
+            return new TeamMemberDto
+            {
+                Id = member.Id,
+                TeamId = member.TeamId,
+                TeamName = member.Team?.Name ?? string.Empty,
+                FullName = member.FullName,
+                DisplayOrder = member.DisplayOrder
             };
         }
 
@@ -61,6 +76,25 @@ namespace AbanobLeague.Application.Mappings
                 Id = score.Id,
                 TeamId = score.TeamId,
                 TeamName = score.Team?.Name ?? string.Empty,
+                CategoryId = score.CategoryId,
+                CategoryName = score.Category?.Name ?? string.Empty,
+                ScoreValue = score.ScoreValue,
+                MaxScore = score.Category?.MaxScore ?? 0,
+                Notes = score.Notes,
+                UpdatedAt = score.UpdatedAt
+            };
+        }
+
+        public static MemberScoreDto ToDto(this MemberScore score)
+        {
+            if (score == null) throw new ArgumentNullException(nameof(score));
+            return new MemberScoreDto
+            {
+                Id = score.Id,
+                TeamMemberId = score.TeamMemberId,
+                TeamMemberName = score.TeamMember?.FullName ?? string.Empty,
+                TeamId = score.TeamMember?.TeamId ?? Guid.Empty,
+                TeamName = score.TeamMember?.Team?.Name ?? string.Empty,
                 CategoryId = score.CategoryId,
                 CategoryName = score.Category?.Name ?? string.Empty,
                 ScoreValue = score.ScoreValue,

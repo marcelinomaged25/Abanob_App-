@@ -94,17 +94,27 @@ namespace AbanobLeague.Application.Services
             if (season == null) return false;
 
             // SQLite keeps some of the season graph on restrictive foreign keys
-            // (notably ranking snapshots and scores), so we remove dependent rows
+            // (notably ranking snapshots, scores, and member records), so we remove dependent rows
             // explicitly before deleting the season itself.
             var teams = (await _unitOfWork.Teams.FindAsync(t => t.SeasonId == id)).ToList();
             var categories = (await _unitOfWork.Categories.FindAsync(c => c.SeasonId == id)).ToList();
             var rankingSnapshots = (await _unitOfWork.RankingSnapshots.FindAsync(rs => rs.SeasonId == id)).ToList();
+            var teamMembers = (await _unitOfWork.TeamMembers.FindAsync(tm => teams.Select(t => t.Id).Contains(tm.TeamId))).ToList();
 
             var teamIds = teams.Select(t => t.Id).ToHashSet();
             var categoryIds = categories.Select(c => c.Id).ToHashSet();
             var scores = (await _unitOfWork.Scores.GetAllAsync())
                 .Where(score => teamIds.Contains(score.TeamId) || categoryIds.Contains(score.CategoryId))
                 .ToList();
+            var memberIds = teamMembers.Select(m => m.Id).ToHashSet();
+            var memberScores = (await _unitOfWork.MemberScores.GetAllAsync())
+                .Where(score => memberIds.Contains(score.TeamMemberId) || categoryIds.Contains(score.CategoryId))
+                .ToList();
+
+            foreach (var memberScore in memberScores)
+            {
+                _unitOfWork.MemberScores.Delete(memberScore);
+            }
 
             foreach (var score in scores)
             {
@@ -119,6 +129,11 @@ namespace AbanobLeague.Application.Services
             foreach (var team in teams)
             {
                 _unitOfWork.Teams.Delete(team);
+            }
+
+            foreach (var member in teamMembers)
+            {
+                _unitOfWork.TeamMembers.Delete(member);
             }
 
             foreach (var category in categories)

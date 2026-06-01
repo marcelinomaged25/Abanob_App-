@@ -15,5 +15,6 @@ namespace AbanobLeague.Domain.Entities
         // Navigation properties
         public Season? Season { get; set; }
         public ICollection<Score> Scores { get; set; } = new List<Score>();
+        public ICollection<TeamMember> Members { get; set; } = new List<TeamMember>();
     }
 }

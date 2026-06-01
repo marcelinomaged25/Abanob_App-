@@ -12,6 +12,7 @@ namespace AbanobLeague.Application
             services.AddScoped<ITeamService, TeamService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IScoreService, ScoreService>();
+            services.AddScoped<IMemberScoreService, MemberScoreService>();
             services.AddScoped<IRankingService, RankingService>();
             services.AddScoped<IAnalyticsService, AnalyticsService>();
             services.AddScoped<IQuickStatsService, QuickStatsService>();

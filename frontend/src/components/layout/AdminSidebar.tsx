@@ -18,6 +18,7 @@ export const AdminSidebar: React.FC = () => {
     { name: 'إدارة الفرق', path: '/admin/teams', icon: Users },
     { name: 'إدارة الفئات', path: '/admin/categories', icon: ListPlus },
     { name: 'إدخال ومصفوفة الدرجات', path: '/admin/scores', icon: FileText },
+    { name: 'تقييم الأفراد', path: '/admin/member-scores', icon: Users },
     { name: 'سجل العمليات (Audit)', path: '/admin/audit-logs', icon: History, superAdminOnly: true },
   ];
 
