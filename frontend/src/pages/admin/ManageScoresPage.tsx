@@ -1,138 +1,39 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useScores } from '@/hooks/useScores';
 import { useSeasonContext } from '@/context/SeasonContext';
 import { TableSkeleton } from '@/components/LoadingSkeleton';
 import { EmptyState } from '@/components/EmptyState';
 import { 
-  FileText, MessageSquare, AlertCircle, CheckCircle2, 
-  RefreshCw, X, Save 
+  FileText, MessageSquare, CheckCircle2, 
+  X, Save, Plus, Clock, List
 } from 'lucide-react';
-
-
 
 export const ManageScoresPage: React.FC = () => {
   const { selectedSeasonId, selectedSeason } = useSeasonContext();
   const { matrix, loading, updateScore } = useScores(selectedSeasonId);
 
-  // local temporary scores state to prevent laggy typing
-  const [localCells, setLocalCells] = useState<Record<string, { value: string; notes: string }>>({});
-  
-  // Validation errors map
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-  
   // Save status feed
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
-  // Notes Modal state
+  // Notes/History Modal state
   const [notesModalTarget, setNotesModalTarget] = useState<{
     teamId: string;
     teamName: string;
     categoryId: string;
     categoryName: string;
     maxScore: number;
+    history: any[];
   } | null>(null);
   
+  // New Score Form State
+  const [newScoreVal, setNewScoreVal] = useState('');
   const [notesText, setNotesText] = useState('');
-
-  // Synchronize local cells state when database matrix is fetched
-  useEffect(() => {
-    if (matrix) {
-      const cells: Record<string, { value: string; notes: string }> = {};
-      matrix.rows.forEach((row) => {
-        row.scores.forEach((cell) => {
-          const key = `${row.teamId}-${cell.categoryId}`;
-          cells[key] = {
-            value: cell.scoreValue !== null ? cell.scoreValue.toString() : '',
-            notes: cell.notes || '',
-          };
-        });
-      });
-      setLocalCells(cells);
-      setValidationErrors({});
-    }
-  }, [matrix]);
-
-  // Debounced auto-save function
-  const triggerAutoSave = useCallback(
-    async (teamId: string, categoryId: string, value: string, notes: string) => {
-      const scoreVal = parseInt(value);
-      if (isNaN(scoreVal)) return;
-
-      setSaveStatus('saving');
-      try {
-        await updateScore({
-          teamId,
-          categoryId,
-          scoreValue: scoreVal,
-          notes,
-        });
-        setSaveStatus('saved');
-        setTimeout(() => setSaveStatus('idle'), 2000);
-      } catch (err) {
-        console.error('Failed to auto-save score', err);
-        setSaveStatus('error');
-      }
-    },
-    [updateScore]
-  );
-
-  // Debounce timers map
-  const [saveTimers, setSaveTimers] = useState<Record<string, number>>({});
-
-  const handleCellChange = (
-    teamId: string,
-    categoryId: string,
-    valStr: string,
-    maxScore: number,
-    existingNotes: string
-  ) => {
-    const key = `${teamId}-${categoryId}`;
-    
-    // 1. Update local cell text state immediately
-    setLocalCells((prev) => ({
-      ...prev,
-      [key]: { value: valStr, notes: existingNotes },
-    }));
-
-    // 2. Perform validations
-    if (valStr.trim() === '') {
-      setValidationErrors((prev) => ({
-        ...prev,
-        [key]: 'الدرجة مطلوبة',
-      }));
-      return;
-    }
-
-    const numericVal = parseInt(valStr);
-    if (isNaN(numericVal) || numericVal < 0 || numericVal > maxScore) {
-      setValidationErrors((prev) => ({
-        ...prev,
-        [key]: `يجب أن تكون بين 0 و ${maxScore}`,
-      }));
-      return;
-    }
-
-    // Clear validation error if valid
-    setValidationErrors((prev) => {
-      const copy = { ...prev };
-      delete copy[key];
-      return copy;
-    });
-
-    // 3. Clear existing timers for this cell and queue a new debounced auto-save
-    if (saveTimers[key]) {
-      clearTimeout(saveTimers[key]);
-    }
-
-    const timer = window.setTimeout(() => {
-      triggerAutoSave(teamId, categoryId, valStr, existingNotes);
-    }, 1200); // Wait for 1.2s of typing idle
-
-    setSaveTimers((prev) => ({
-      ...prev,
-      [key]: timer,
-    }));
-  };
+  const [notesDate, setNotesDate] = useState(() => {
+    // Current date and time formatted for datetime-local input
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 19);
+  });
 
   // Open Notes Modal
   const openNotesModal = (
@@ -140,38 +41,54 @@ export const ManageScoresPage: React.FC = () => {
     teamName: string,
     categoryId: string,
     categoryName: string,
-    maxScore: number
+    maxScore: number,
+    history: any[]
   ) => {
-    const key = `${teamId}-${categoryId}`;
-    const cellData = localCells[key];
-    setNotesText(cellData ? cellData.notes : '');
+    setNewScoreVal('');
+    setNotesText('');
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    setNotesDate(now.toISOString().slice(0, 19));
+
     setNotesModalTarget({
       teamId,
       teamName,
       categoryId,
       categoryName,
       maxScore,
+      history: history || []
     });
   };
 
   // Save Notes Handler
   const handleSaveNotes = async () => {
     if (!notesModalTarget) return;
+    
+    const scoreNum = parseInt(newScoreVal);
+    if (isNaN(scoreNum) || scoreNum < 0 || scoreNum > notesModalTarget.maxScore) {
+      alert(`الرجاء إدخال درجة صحيحة بين 0 و ${notesModalTarget.maxScore}`);
+      return;
+    }
+
     const { teamId, categoryId } = notesModalTarget;
-    const key = `${teamId}-${categoryId}`;
-    const cellValStr = localCells[key]?.value || '0';
+    const dateToSave = notesDate ? new Date(notesDate).toISOString() : undefined;
 
-    // Update local state
-    setLocalCells((prev) => ({
-      ...prev,
-      [key]: { value: cellValStr, notes: notesText },
-    }));
-
-    // Close Modal
-    setNotesModalTarget(null);
-
-    // Save immediately to backend
-    await triggerAutoSave(teamId, categoryId, cellValStr, notesText);
+    setSaveStatus('saving');
+    try {
+      await updateScore({
+        teamId,
+        categoryId,
+        scoreValue: scoreNum,
+        notes: notesText,
+        updatedAt: dateToSave,
+      });
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+      setNotesModalTarget(null);
+    } catch (err) {
+      console.error('Failed to save score', err);
+      setSaveStatus('error');
+    }
   };
 
   if (loading && !matrix) {
@@ -186,10 +103,10 @@ export const ManageScoresPage: React.FC = () => {
         <div>
           <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
             <FileText className="h-5.5 w-5.5 text-brand-gold-500" />
-            <span>رصد مصفوفة درجات التقييم</span>
+            <span>رصد مصفوفة درجات التقييم (سجل النقاط)</span>
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            جدول رصد إلكتروني تفاعلي لـ <span className="font-extrabold text-brand-navy-600 dark:text-brand-gold-400">{selectedSeason?.name}</span>. قم بتعديل الدرجات مباشرة في الخلايا وسيحفظ النظام تلقائياً.
+            جدول رصد إلكتروني تفاعلي لـ <span className="font-extrabold text-brand-navy-600 dark:text-brand-gold-400">{selectedSeason?.name}</span>. انقر على خلية الدرجة لإضافة تقييم جديد للفريق وعرض السجل التاريخي.
           </p>
         </div>
 
@@ -197,25 +114,14 @@ export const ManageScoresPage: React.FC = () => {
         <div className="flex items-center gap-2 text-xs font-bold">
           {saveStatus === 'saving' && (
             <span className="flex items-center gap-1.5 text-brand-navy-500 dark:text-brand-gold-400 animate-pulse">
-              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-              جاري الحفظ التلقائي...
+              <span className="h-3.5 w-3.5 rounded-full border-2 border-brand-navy-500 dark:border-brand-gold-400 border-t-transparent animate-spin" />
+              جاري حفظ التقييم...
             </span>
           )}
           {saveStatus === 'saved' && (
             <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 animate-fade-in">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              تم حفظ التعديلات بنجاح!
-            </span>
-          )}
-          {saveStatus === 'error' && (
-            <span className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400">
-              <AlertCircle className="h-3.5 w-3.5" />
-              فشل الحفظ التلقائي!
-            </span>
-          )}
-          {saveStatus === 'idle' && (
-            <span className="text-slate-400 text-[10px] font-semibold">
-              * جميع الدرجات تحفظ تلقائياً عند التوقف عن الكتابة
+              تم حفظ التقييم بنجاح!
             </span>
           )}
         </div>
@@ -233,7 +139,7 @@ export const ManageScoresPage: React.FC = () => {
                 {matrix.categories.map((cat) => (
                   <th key={cat.id} className="py-4 px-4 text-center">
                     <span>{cat.name}</span>
-                    <span className="text-[9px] text-slate-400 block font-normal mt-0.5">الحد الأقصى ({cat.maxScore})</span>
+                    <span className="text-[9px] text-slate-400 block font-normal mt-0.5">مجموع (الحد الأقصى لكل تقييم {cat.maxScore})</span>
                   </th>
                 ))}
               </tr>
@@ -260,67 +166,35 @@ export const ManageScoresPage: React.FC = () => {
                     </td>
 
                     {/* Scores inputs columns */}
-                    {matrix.categories.map((cat) => {
-                      const key = `${row.teamId}-${cat.id}`;
-                      const cellData = localCells[key] || { value: '', notes: '' };
-                      const hasError = !!validationErrors[key];
-                      const hasNotes = !!cellData.notes;
+                    {row.scores.map((cell) => {
+                      const hasNotes = !!cell.notes || (cell.history && cell.history.length > 0);
+                      const cat = matrix.categories.find(c => c.id === cell.categoryId)!;
 
                       return (
-                        <td key={cat.id} className="py-4 px-4 text-center">
-                          <div className="inline-flex items-center gap-1.5 relative">
+                        <td key={cell.categoryId} className="py-4 px-4 text-center">
+                          <button
+                            onClick={() => 
+                              openNotesModal(
+                                row.teamId, 
+                                row.teamName, 
+                                cat.id, 
+                                cat.name, 
+                                cat.maxScore,
+                                cell.history || []
+                              )
+                            }
+                            className={`inline-flex items-center gap-1.5 relative h-9 px-3 rounded-lg border transition-all hover:shadow-sm cursor-pointer ${
+                              cell.scoreValue != null && cell.scoreValue > 0
+                                ? 'bg-brand-navy-50 border-brand-navy-200 text-brand-navy-900 dark:bg-brand-navy-900 dark:border-brand-navy-700 dark:text-white font-black'
+                                : 'bg-slate-50 border-slate-200 text-slate-400 dark:bg-brand-navy-950 dark:border-brand-navy-850 dark:text-slate-500 font-bold'
+                            }`}
+                          >
+                            <span>{cell.scoreValue != null ? cell.scoreValue : '-'}</span>
                             
-                            {/* Score Input Box */}
-                            <input
-                              type="text"
-                              value={cellData.value}
-                              onChange={(e) => 
-                                handleCellChange(
-                                  row.teamId, 
-                                  cat.id, 
-                                  e.target.value, 
-                                  cat.maxScore, 
-                                  cellData.notes
-                                )
-                              }
-                              className={`w-14 h-9 text-center text-xs font-black rounded-lg border bg-slate-50 dark:bg-brand-navy-950 dark:text-white transition-all focus:bg-white focus:shadow-sm focus:outline-none ${
-                                hasError 
-                                  ? 'border-rose-400 dark:border-rose-600 focus:border-rose-500' 
-                                  : 'border-slate-200 dark:border-brand-navy-850 focus:border-brand-navy-500'
-                              }`}
-                              placeholder="-"
-                              title={hasError ? validationErrors[key] : ''}
-                            />
-
-                            {/* Add/View notes comment bubble button */}
-                            <button
-                              onClick={() => 
-                                openNotesModal(
-                                  row.teamId, 
-                                  row.teamName, 
-                                  cat.id, 
-                                  cat.name, 
-                                  cat.maxScore
-                                )
-                              }
-                              className={`h-7 w-7 rounded-lg border flex items-center justify-center transition-colors cursor-pointer ${
-                                hasNotes 
-                                  ? 'bg-amber-50 border-amber-300 text-brand-gold-500 hover:bg-amber-100 dark:bg-amber-950/20 dark:border-amber-900/30' 
-                                  : 'bg-slate-50 border-slate-200 text-slate-400 hover:bg-slate-100 dark:bg-brand-navy-950 dark:border-brand-navy-850 dark:text-slate-500'
-                              }`}
-                              title={hasNotes ? `تعديل الملاحظة: ${cellData.notes}` : 'إضافة ملاحظة المقيم'}
-                            >
-                              <MessageSquare className="h-3.5 w-3.5 fill-current" style={{ fillOpacity: hasNotes ? 1 : 0 }} />
-                            </button>
-
-                          </div>
-
-                          {/* Inline Error Indicator tooltip */}
-                          {hasError && (
-                            <span className="text-[9px] text-rose-500 block font-bold mt-1 text-center select-none animate-pulse">
-                              {validationErrors[key]}
-                            </span>
-                          )}
+                            {hasNotes && (
+                              <List className="h-3.5 w-3.5 text-brand-gold-500" />
+                            )}
+                          </button>
                         </td>
                       );
                     })}
@@ -338,53 +212,129 @@ export const ManageScoresPage: React.FC = () => {
         />
       )}
 
-      {/* Notes Dialog/Modal */}
+      {/* History & Add Score Dialog/Modal */}
       {notesModalTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-sm animate-fade-in" dir="rtl">
-          <div className="w-full max-w-md bg-white dark:bg-brand-navy-900 border border-slate-200 dark:border-brand-navy-800 rounded-3xl p-6 shadow-2xl space-y-4 animate-scale-in">
+          <div className="w-full max-w-lg bg-white dark:bg-brand-navy-900 border border-slate-200 dark:border-brand-navy-800 rounded-3xl p-6 shadow-2xl flex flex-col max-h-[90vh] animate-scale-in">
             
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-brand-navy-850 pb-3">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-brand-navy-850 pb-3 mb-4">
               <div>
-                <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">إضافة ملاحظات التقييم</h3>
-                <p className="text-[10px] text-slate-400 mt-0.5">
-                  فريق: <span className="font-extrabold text-slate-700 dark:text-slate-200">{notesModalTarget.teamName}</span> | فئة: <span className="font-extrabold">{notesModalTarget.categoryName}</span>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                  <List className="h-4 w-4 text-brand-gold-500" />
+                  سجل وإضافة التقييمات
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  فريق: <span className="font-extrabold text-brand-navy-600 dark:text-brand-gold-400">{notesModalTarget.teamName}</span> | 
+                  فئة: <span className="font-extrabold text-brand-navy-600 dark:text-brand-gold-400">{notesModalTarget.categoryName}</span>
                 </p>
               </div>
               <button 
                 onClick={() => setNotesModalTarget(null)}
-                className="h-7 w-7 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-brand-navy-800 cursor-pointer"
+                className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-brand-navy-800 cursor-pointer transition-colors"
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="space-y-3 text-right">
-              <label className="text-xs font-extrabold text-slate-600 dark:text-slate-300">ملاحظات وتقييم المشرفين</label>
-              <textarea
-                value={notesText}
-                onChange={(e) => setNotesText(e.target.value)}
-                placeholder="أداء ممتاز للشباب، أخطاء طفيفة في الطقوس..."
-                rows={4}
-                className="w-full p-3.5 text-xs bg-slate-50 border border-slate-200 text-slate-800 dark:bg-brand-navy-950 dark:border-brand-navy-850 dark:text-slate-100 rounded-xl"
-              />
-            </div>
+            <div className="flex-1 overflow-y-auto pr-1 space-y-6">
+              
+              {/* Add New Score Form */}
+              <div className="bg-slate-50 dark:bg-brand-navy-950 p-4 rounded-2xl border border-slate-200 dark:border-brand-navy-850 space-y-4">
+                <h4 className="text-xs font-black text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <Plus className="h-3.5 w-3.5" />
+                  إضافة تقييم جديد
+                </h4>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-500">الدرجة المضافة</label>
+                    <input
+                      type="number"
+                      value={newScoreVal}
+                      onChange={(e) => setNewScoreVal(e.target.value)}
+                      min="0"
+                      max={notesModalTarget.maxScore}
+                      placeholder={`أقصى حد ${notesModalTarget.maxScore}`}
+                      className="w-full h-10 px-3 text-xs font-black bg-white dark:bg-brand-navy-900 border border-slate-200 dark:border-brand-navy-700 text-slate-800 dark:text-white rounded-xl focus:border-brand-gold-500 focus:ring-1 focus:ring-brand-gold-500"
+                    />
+                  </div>
+                  
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-500">التاريخ والوقت</label>
+                    <input
+                      type="datetime-local"
+                      value={notesDate}
+                      onChange={(e) => setNotesDate(e.target.value)}
+                      step="1"
+                      className="w-full h-10 px-3 text-xs bg-white dark:bg-brand-navy-900 border border-slate-200 dark:border-brand-navy-700 text-slate-800 dark:text-white rounded-xl focus:border-brand-gold-500 focus:ring-1 focus:ring-brand-gold-500"
+                    />
+                  </div>
+                </div>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-brand-navy-850">
-              <button
-                onClick={() => setNotesModalTarget(null)}
-                className="px-4 py-2 border border-slate-200 dark:border-brand-navy-800 text-xs font-bold text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-50 cursor-pointer"
-              >
-                إلغاء
-              </button>
-              <button
-                onClick={handleSaveNotes}
-                className="px-5 py-2 bg-brand-navy-950 hover:bg-brand-navy-900 dark:bg-brand-gold-500 dark:text-brand-navy-950 dark:hover:bg-brand-gold-400 text-white font-extrabold rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer"
-              >
-                <Save className="h-4 w-4" />
-                <span>حفظ الملاحظة</span>
-              </button>
-            </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-500">ملاحظات التقييم</label>
+                  <textarea
+                    value={notesText}
+                    onChange={(e) => setNotesText(e.target.value)}
+                    placeholder="ملاحظات حول هذا التقييم تحديداً..."
+                    rows={2}
+                    className="w-full p-3 text-xs bg-white dark:bg-brand-navy-900 border border-slate-200 dark:border-brand-navy-700 text-slate-800 dark:text-white rounded-xl focus:border-brand-gold-500 focus:ring-1 focus:ring-brand-gold-500 resize-none"
+                  />
+                </div>
 
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={handleSaveNotes}
+                    disabled={!newScoreVal || saveStatus === 'saving'}
+                    className="px-5 py-2 bg-brand-navy-950 hover:bg-brand-navy-900 dark:bg-brand-gold-500 dark:text-brand-navy-950 dark:hover:bg-brand-gold-400 text-white font-extrabold rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    <Save className="h-4 w-4" />
+                    <span>حفظ وإضافة للمجموع</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* History List */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-black text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5" />
+                  سجل التقييمات السابقة
+                </h4>
+                
+                {notesModalTarget.history && notesModalTarget.history.length > 0 ? (
+                  <div className="space-y-2">
+                    {notesModalTarget.history.map((entry, idx) => (
+                      <div key={entry.id || idx} className="bg-slate-50/50 dark:bg-brand-navy-950/50 p-3 rounded-xl border border-slate-100 dark:border-brand-navy-800 flex items-start gap-3">
+                        <div className="h-8 w-8 rounded-full bg-brand-gold-500/20 text-brand-gold-600 dark:text-brand-gold-400 flex items-center justify-center font-black text-xs shrink-0 mt-0.5">
+                          +{entry.scoreValue}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                              تم إضافة {entry.scoreValue} نقطة
+                            </span>
+                            <span className="text-[10px] text-slate-400 bg-white dark:bg-brand-navy-900 px-2 py-0.5 rounded border border-slate-100 dark:border-brand-navy-800">
+                              {new Date(entry.updatedAt).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'medium' })}
+                            </span>
+                          </div>
+                          {entry.notes && (
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 bg-white/50 dark:bg-brand-navy-900/50 p-2 rounded-lg border border-slate-100 dark:border-brand-navy-800">
+                              {entry.notes}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6 bg-slate-50/50 dark:bg-brand-navy-950/50 rounded-xl border border-slate-100 dark:border-brand-navy-800 border-dashed">
+                    <MessageSquare className="h-6 w-6 text-slate-300 mx-auto mb-2" />
+                    <p className="text-xs font-bold text-slate-500">لا يوجد تقييمات مسجلة حتى الآن.</p>
+                  </div>
+                )}
+              </div>
+
+            </div>
           </div>
         </div>
       )}

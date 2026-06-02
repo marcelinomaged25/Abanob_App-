@@ -2,8 +2,10 @@ import api from './api';
 import type { Team, TeamProfile } from '@/types';
 
 export const getTeams = async (seasonId?: string): Promise<Team[]> => {
-  const url = seasonId ? `/teams?seasonId=${seasonId}` : '/teams';
-  const response = await api.get<Team[]>(url);
+  if (!seasonId) {
+    throw new Error('معرّف الموسم مطلوب لتحميل الفرق.');
+  }
+  const response = await api.get<Team[]>(`/teams/season/${seasonId}`);
   return response.data;
 };
 
@@ -17,13 +19,26 @@ export const getTeamProfile = async (id: string): Promise<TeamProfile> => {
   return response.data;
 };
 
-export const createTeam = async (team: Omit<Team, 'id' | 'createdAt' | 'seasonName'>): Promise<Team> => {
-  const response = await api.post<Team>('/teams', team);
+export const createTeam = async (
+  team: Pick<Team, 'name' | 'description' | 'seasonId'> & { memberNames?: string[] }
+): Promise<Team> => {
+  const response = await api.post<Team>('/teams', {
+    name: team.name,
+    description: team.description,
+    seasonId: team.seasonId,
+    memberNames: team.memberNames ?? [],
+  });
   return response.data;
 };
 
-export const updateTeam = async (id: string, team: Omit<Team, 'createdAt' | 'seasonName'>): Promise<Team> => {
-  const response = await api.put<Team>(`/teams/${id}`, team);
+export const updateTeam = async (
+  id: string,
+  team: Pick<Team, 'name' | 'description'>
+): Promise<Team> => {
+  const response = await api.put<Team>(`/teams/${id}`, {
+    name: team.name,
+    description: team.description,
+  });
   return response.data;
 };
 

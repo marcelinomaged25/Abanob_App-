@@ -28,35 +28,19 @@ export const useScores = (seasonId?: string, autoFetch: boolean = true) => {
   }, [seasonId, autoFetch, fetchMatrix]);
 
   const updateScoreValue = async (scoreData: {
+    scoreId?: string;
     teamId: string;
     categoryId: string;
     scoreValue: number;
     notes?: string;
+    updatedAt?: string;
   }) => {
     setLoading(true);
     try {
       const updated = await scoreService.updateScore(scoreData);
       
-      // Update local state if matrix is loaded
-      if (matrix) {
-        const updatedRows = matrix.rows.map((row) => {
-          if (row.teamId === scoreData.teamId) {
-            const updatedScores = row.scores.map((cell) => {
-              if (cell.categoryId === scoreData.categoryId) {
-                return {
-                  ...cell,
-                  scoreValue: scoreData.scoreValue,
-                  notes: scoreData.notes || '',
-                };
-              }
-              return cell;
-            });
-            return { ...row, scores: updatedScores };
-          }
-          return row;
-        });
-        setMatrix({ ...matrix, rows: updatedRows });
-      }
+      // Re-fetch matrix to get the updated sums and history
+      await fetchMatrix();
 
       return updated;
     } catch (err: any) {

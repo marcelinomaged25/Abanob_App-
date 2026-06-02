@@ -22,7 +22,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add Layers DI
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration, builder.Environment.ContentRootPath);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -129,9 +129,23 @@ using (var scope = app.Services.CreateScope())
     {
         var context = services.GetRequiredService<AppDbContext>();
         var passwordHasher = services.GetRequiredService<IPasswordHasher>();
-        context.Database.Migrate();
+
+        try
+        {
+            await context.Database.MigrateAsync();
+        }
+        catch (Exception migrateEx)
+        {
+            var migrateLogger = services.GetRequiredService<ILogger<Program>>();
+            migrateLogger.LogWarning(
+                migrateEx,
+                "EF migrate skipped or failed (legacy database). Applying schema repair.");
+        }
+
+        await DatabaseSchemaRepair.EnsureTeamMembersSchemaAsync(context);
         await DataSeeder.SeedAsync(context, passwordHasher);
-        Console.WriteLine("Database migration and seeding completed successfully.");
+        var dbPath = context.Database.GetDbConnection().DataSource;
+        Console.WriteLine($"Database ready at: {dbPath}");
     }
     catch (Exception ex)
     {

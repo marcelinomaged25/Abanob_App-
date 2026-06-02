@@ -21,9 +21,12 @@ namespace AbanobLeague.Application.Services
 
         public async Task<IEnumerable<TeamDto>> GetTeamsBySeasonAsync(Guid seasonId)
         {
-            var teams = await _unitOfWork.Teams.FindAsync(t => t.SeasonId == seasonId);
+            var teams = (await _unitOfWork.Teams.FindAsync(t => t.SeasonId == seasonId)).ToList();
             var season = await _unitOfWork.Seasons.GetByIdAsync(seasonId);
-            var members = await _unitOfWork.TeamMembers.FindAsync(m => teams.Select(t => t.Id).Contains(m.TeamId));
+            var teamIds = teams.Select(t => t.Id).ToList();
+            var members = teamIds.Count == 0
+                ? new List<TeamMember>()
+                : (await _unitOfWork.TeamMembers.FindAsync(m => teamIds.Contains(m.TeamId))).ToList();
             var memberCounts = members.GroupBy(m => m.TeamId).ToDictionary(g => g.Key, g => g.Count());
 
             return teams.Select(t => {
@@ -52,10 +55,16 @@ namespace AbanobLeague.Application.Services
 
         public async Task<TeamDto> CreateTeamAsync(CreateTeamDto dto, string? logoUrl = null)
         {
+            var season = await _unitOfWork.Seasons.GetByIdAsync(dto.SeasonId);
+            if (season == null)
+            {
+                throw new ArgumentException("الموسم المحدد غير موجود. حدّث الصفحة واختر موسمًا من القائمة.");
+            }
+
             var memberNames = NormalizeMemberNames(dto.MemberNames);
             if (memberNames.Count > 10)
             {
-                throw new ArgumentException("A team can have at most 10 members.");
+                throw new ArgumentException("لا يمكن أن يتجاوز الفريق 10 أفراد.");
             }
 
             var team = new Team
@@ -72,7 +81,7 @@ namespace AbanobLeague.Application.Services
             await AddMembersAsync(team.Id, memberNames);
             await _unitOfWork.SaveChangesAsync();
 
-            team.Season = await _unitOfWork.Seasons.GetByIdAsync(team.SeasonId);
+            team.Season = season;
             team.Members = (await _unitOfWork.TeamMembers.FindAsync(m => m.TeamId == team.Id)).ToList();
             var result = team.ToDto();
             result.MemberCount = team.Members.Count;
@@ -98,7 +107,7 @@ namespace AbanobLeague.Application.Services
                 var memberNames = NormalizeMemberNames(dto.MemberNames);
                 if (memberNames.Count > 10)
                 {
-                    throw new ArgumentException("A team can have at most 10 members.");
+                    throw new ArgumentException("لا يمكن أن يتجاوز الفريق 10 أفراد.");
                 }
 
                 await ReplaceMembersAsync(team.Id, memberNames);
@@ -185,8 +194,8 @@ namespace AbanobLeague.Application.Services
 
             foreach (var cat in categoriesList)
             {
-                var matchingScore = teamScores.FirstOrDefault(s => s.CategoryId == cat.Id);
-                int scoreVal = matchingScore?.ScoreValue ?? 0;
+                var categoryScores = teamScores.Where(s => s.CategoryId == cat.Id).ToList();
+                int scoreVal = categoryScores.Sum(s => s.ScoreValue);
                 double percentage = cat.MaxScore > 0 ? ((double)scoreVal / cat.MaxScore) * 100 : 0;
 
                 categoryBreakdown.Add(new CategoryScoreDto
@@ -196,7 +205,7 @@ namespace AbanobLeague.Application.Services
                     Score = scoreVal,
                     MaxScore = cat.MaxScore,
                     Percentage = Math.Round(percentage, 1),
-                    Notes = matchingScore?.Notes ?? string.Empty
+                    Notes = categoryScores.OrderByDescending(s => s.UpdatedAt).FirstOrDefault()?.Notes ?? string.Empty
                 });
             }
 

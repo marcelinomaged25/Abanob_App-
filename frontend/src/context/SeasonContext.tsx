@@ -8,7 +8,7 @@ interface SeasonContextType {
   selectedSeasonId: string;
   setSelectedSeasonId: (id: string) => void;
   loading: boolean;
-  refreshSeasons: () => Promise<void>;
+  refreshSeasons: (preferredSeasonId?: string) => Promise<void>;
 }
 
 const SeasonContext = createContext<SeasonContextType | undefined>(undefined);
@@ -19,24 +19,33 @@ export const SeasonProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [selectedSeasonId, setSelectedSeasonIdState] = useState<string>('');
   const [loading, setLoading] = useState(true);
 
-  const loadSeasons = useCallback(async () => {
+  const loadSeasons = useCallback(async (preferredSeasonId?: string) => {
     setLoading(true);
     try {
       const data = await seasonService.getSeasons();
       setSeasons(data);
-      
-      // Prefer the active season first so stale localStorage never overrides
-      // the season that the system currently considers active.
+
       const savedId = localStorage.getItem('selected_season_id');
+      if (savedId && !data.some((s) => s.id === savedId)) {
+        localStorage.removeItem('selected_season_id');
+      }
+
+      const preferred = preferredSeasonId
+        ? data.find((s) => s.id === preferredSeasonId)
+        : null;
       const active = data.find((s) => s.isActive);
       const saved = savedId ? data.find((s) => s.id === savedId) : null;
-      
-      const defaultSeason = active || saved || data[0] || null;
+
+      const defaultSeason = preferred || active || saved || data[0] || null;
 
       if (defaultSeason) {
         setSelectedSeason(defaultSeason);
         setSelectedSeasonIdState(defaultSeason.id);
         localStorage.setItem('selected_season_id', defaultSeason.id);
+      } else {
+        setSelectedSeason(null);
+        setSelectedSeasonIdState('');
+        localStorage.removeItem('selected_season_id');
       }
     } catch (error) {
       console.error('Failed to load seasons in context', error);
@@ -55,7 +64,12 @@ export const SeasonProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setSelectedSeason(found);
       setSelectedSeasonIdState(id);
       localStorage.setItem('selected_season_id', id);
+      return;
     }
+
+    localStorage.removeItem('selected_season_id');
+    setSelectedSeason(null);
+    setSelectedSeasonIdState('');
   };
 
   return (

@@ -7,6 +7,7 @@ import { HomePage } from '@/pages/public/HomePage'
 import { StandingsPage } from '@/pages/public/StandingsPage'
 import { TeamProfilePage } from '@/pages/public/TeamProfilePage'
 import { LeaderboardPage } from '@/pages/public/LeaderboardPage'
+import { IndividualLeaderboardPage } from '@/pages/public/IndividualLeaderboardPage'
 import { HallOfFamePage } from '@/pages/public/HallOfFamePage'
 import { AnalyticsPage } from '@/pages/public/AnalyticsPage'
 
@@ -27,6 +28,7 @@ function App() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/standings" element={<StandingsPage />} />
+        <Route path="/members" element={<IndividualLeaderboardPage />} />
         <Route path="/team/:id" element={<TeamProfilePage />} />
         <Route path="/live" element={<LeaderboardPage />} />
         <Route path="/hall-of-fame" element={<HallOfFamePage />} />

@@ -31,6 +31,7 @@ export const Footer: React.FC = () => {
             <div className="grid grid-cols-2 gap-2 text-xs">
               <Link to="/" className="hover:text-brand-gold-300 transition-colors">الرئيسية</Link>
               <Link to="/standings" className="hover:text-brand-gold-300 transition-colors">جدول الترتيب</Link>
+              <Link to="/members" className="hover:text-brand-gold-300 transition-colors">ترتيب الأفراد</Link>
               <Link to="/live" className="hover:text-brand-gold-300 transition-colors">مباشر</Link>
               <Link to="/hall-of-fame" className="hover:text-brand-gold-300 transition-colors">لوحة الشرف</Link>
               <Link to="/analytics" className="hover:text-brand-gold-300 transition-colors">التحليلات</Link>
@@ -45,8 +46,7 @@ export const Footer: React.FC = () => {
               "وَلَكِنْ قَبْلَ كُلِّ شَيْءٍ، لِتَكُنْ مَحَبَّتُكُمْ بَعْضِكُمْ لِبَعْضٍ شَدِيدَةً، لِأَنَّ ٱلْمَحَبَّةَ تَسْتُرُ كَثْرَةً مِنَ ٱلْخَطَايَا.
  " (بُطْرُسَ ٱلْأُولَى ٤:٨)
               <br />
-              هدفنا تنمية المواهب الروحية، الطقسية، والفكرية لدى شباب خورس القديس ابانوب وخلق روح التنافس الشريف المليئة بالحب والسلام.
-            </p>
+هدفنا إننا نتعلم حاجات جديدة ونكبر روحيًا وطقسيًا مع بعض، ونشجع بعض من خلال منافسة حلوة تخلينا نطلع أحسن ما عندنا. لكن في الآخر الأهم من أي نقاط أو ترتيب هو إن المحبة والاحترام يفضلوا موجودين بيننا دايمًا.            </p>
           </div>
 
         </div>

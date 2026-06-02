@@ -5,7 +5,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useSeasonContext } from '@/context/SeasonContext';
 import { 
   Trophy, Sun, Moon, LogIn, LayoutDashboard, LogOut, 
-  Menu, X, Calendar, Activity, BarChart2, Award 
+  Menu, X, Calendar, Activity, BarChart2, Award, Users 
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
@@ -20,6 +20,7 @@ export const Header: React.FC = () => {
   const publicNavLinks = [
     { name: 'الرئيسية', path: '/', icon: Trophy },
     { name: 'جدول الترتيب', path: '/standings', icon: Calendar },
+    { name: 'ترتيب الأفراد', path: '/members', icon: Users },
     { name: 'مباشر', path: '/live', icon: Activity },
     { name: 'لوحة الشرف', path: '/hall-of-fame', icon: Award },
     { name: 'التحليلات والرسوم', path: '/analytics', pathBase: '/analytics', icon: BarChart2 },

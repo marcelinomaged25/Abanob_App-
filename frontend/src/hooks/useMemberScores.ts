@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { MemberScoreMatrix } from '@/types';
+import type { MemberScoreMatrix, MemberLeaderboardEntry } from '@/types';
 import * as memberScoreService from '@/services/memberScoreService';
 
 export const useMemberScores = (seasonId?: string, autoFetch: boolean = true) => {
   const [matrix, setMatrix] = useState<MemberScoreMatrix | null>(null);
+  const [leaderboard, setLeaderboard] = useState<MemberLeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -12,10 +13,14 @@ export const useMemberScores = (seasonId?: string, autoFetch: boolean = true) =>
     setLoading(true);
     setError(null);
     try {
-      const data = await memberScoreService.getMemberScoreMatrix(seasonId);
-      setMatrix(data);
+      const [matrixData, leaderboardData] = await Promise.all([
+        memberScoreService.getMemberScoreMatrix(seasonId),
+        memberScoreService.getIndividualLeaderboard(seasonId),
+      ]);
+      setMatrix(matrixData);
+      setLeaderboard(leaderboardData);
     } catch (err: any) {
-      setError(err.message || 'حدث خطأ أثناء تحميل مصفوفة درجات الأفراد');
+      setError(err.message || 'حدث خطأ أثناء تحميل بيانات الأفراد');
     } finally {
       setLoading(false);
     }
@@ -28,35 +33,18 @@ export const useMemberScores = (seasonId?: string, autoFetch: boolean = true) =>
   }, [seasonId, autoFetch, fetchMatrix]);
 
   const updateMemberScoreValue = async (scoreData: {
+    scoreId?: string;
     teamMemberId: string;
     categoryId: string;
     scoreValue: number;
     notes?: string;
+    updatedAt?: string;
   }) => {
     setLoading(true);
     try {
       const updated = await memberScoreService.updateMemberScore(scoreData);
-
-      if (matrix) {
-        const updatedRows = matrix.rows.map((row) => {
-          if (row.teamMemberId === scoreData.teamMemberId) {
-            const updatedScores = row.scores.map((cell) => {
-              if (cell.categoryId === scoreData.categoryId) {
-                return {
-                  ...cell,
-                  scoreValue: scoreData.scoreValue,
-                  notes: scoreData.notes || '',
-                };
-              }
-              return cell;
-            });
-            return { ...row, scores: updatedScores };
-          }
-          return row;
-        });
-        setMatrix({ ...matrix, rows: updatedRows });
-      }
-
+      // Re-fetch to get updated sums and history
+      await fetchMatrix();
       return updated;
     } catch (err: any) {
       setError(err.message || 'فشل تحديث درجة الفرد');
@@ -68,6 +56,7 @@ export const useMemberScores = (seasonId?: string, autoFetch: boolean = true) =>
 
   return {
     matrix,
+    leaderboard,
     loading,
     error,
     refetch: fetchMatrix,

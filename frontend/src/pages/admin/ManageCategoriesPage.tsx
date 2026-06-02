@@ -261,7 +261,7 @@ export const ManageCategoriesPage: React.FC = () => {
                   placeholder="مثال: 50"
                   required
                   min={1}
-                  max={200}
+                  max={10000}
                   className="w-full h-10 px-3.5 text-xs bg-slate-50 border border-slate-200 text-slate-800 dark:bg-brand-navy-950 dark:border-brand-navy-850 dark:text-slate-100 rounded-xl"
                 />
               </div>

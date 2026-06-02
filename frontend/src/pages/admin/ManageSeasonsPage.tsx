@@ -3,6 +3,7 @@ import { useSeasons } from '@/hooks/useSeasons';
 import { useSeasonContext } from '@/context/SeasonContext';
 import { TableSkeleton } from '@/components/LoadingSkeleton';
 import { EmptyState } from '@/components/EmptyState';
+import { getApiErrorMessage } from '@/utils/apiError';
 import type { Season } from '@/types';
 import { 
   Calendar, Plus, Trash2, Edit2, 
@@ -11,7 +12,7 @@ import {
 
 export const ManageSeasonsPage: React.FC = () => {
   const { seasons, loading, createSeason, updateSeason, activateSeason, deleteSeason } = useSeasons();
-  const { refreshSeasons } = useSeasonContext();
+  const { refreshSeasons, setSelectedSeasonId } = useSeasonContext();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingSeason, setEditingSeason] = useState<Season | null>(null);
@@ -24,6 +25,8 @@ export const ManageSeasonsPage: React.FC = () => {
 
   // Delete Dialog
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+  const [pageError, setPageError] = useState<string | null>(null);
 
   const openCreateModal = () => {
     setEditingSeason(null);
@@ -58,11 +61,13 @@ export const ManageSeasonsPage: React.FC = () => {
     try {
       if (editingSeason) {
         await updateSeason(editingSeason.id, { id: editingSeason.id, ...payload });
+        await refreshSeasons(editingSeason.id);
       } else {
-        await createSeason(payload);
+        const created = await createSeason(payload);
+        await refreshSeasons(created.id);
+        setSelectedSeasonId(created.id);
       }
       setModalOpen(false);
-      await refreshSeasons(); // Sync global season dropdown
     } catch (err) {
       console.error(err);
     }
@@ -70,24 +75,32 @@ export const ManageSeasonsPage: React.FC = () => {
 
   const handleActivate = async (id: string) => {
     if (!window.confirm('هل أنت متأكد من تفعيل هذا الموسم؟ سيؤدي ذلك لإلغاء تفعيل أي مواسم أخرى نشطة.')) return;
+    setPageError(null);
     try {
       await activateSeason(id);
-      await refreshSeasons();
-    } catch (err: any) {
+      await refreshSeasons(id);
+      setSelectedSeasonId(id);
+    } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || 'فشل تفعيل الموسم. يرجى المحاولة مرة أخرى.');
+      setPageError(getApiErrorMessage(err, 'فشل تفعيل الموسم. يرجى المحاولة مرة أخرى.'));
     }
   };
 
   const handleDelete = async () => {
-    if (!deleteTargetId) return;
+    if (!deleteTargetId || deleteSubmitting) return;
+    const seasonId = deleteTargetId;
+    setDeleteSubmitting(true);
+    setPageError(null);
     try {
-      await deleteSeason(deleteTargetId);
+      await deleteSeason(seasonId);
       setDeleteTargetId(null);
       await refreshSeasons();
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || 'فشل حذف الموسم. يرجى المحاولة مرة أخرى.');
+      setDeleteTargetId(null);
+      setPageError(getApiErrorMessage(err, 'فشل حذف الموسم. يرجى المحاولة مرة أخرى.'));
+    } finally {
+      setDeleteSubmitting(false);
     }
   };
 
@@ -118,6 +131,15 @@ export const ManageSeasonsPage: React.FC = () => {
           <span>إنشاء موسم جديد</span>
         </button>
       </div>
+
+      {pageError && (
+        <div
+          role="alert"
+          className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-800 dark:border-rose-950/40 dark:bg-rose-950/20 dark:text-rose-200"
+        >
+          {pageError}
+        </div>
+      )}
 
       {/* Season Entries List */}
       {seasons.length > 0 ? (
@@ -330,9 +352,10 @@ export const ManageSeasonsPage: React.FC = () => {
               </button>
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-extrabold rounded-xl shadow-md cursor-pointer"
+                disabled={deleteSubmitting}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-extrabold rounded-xl shadow-md cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                حذف نهائي
+                {deleteSubmitting ? 'جاري الحذف...' : 'حذف نهائي'}
               </button>
             </div>
           </div>

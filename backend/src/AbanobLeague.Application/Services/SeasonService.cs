@@ -93,58 +93,7 @@ namespace AbanobLeague.Application.Services
             var season = await _unitOfWork.Seasons.GetByIdAsync(id);
             if (season == null) return false;
 
-            // Delete in dependency order and persist each step so SQLite does not trip over FK timing.
-            var teams = (await _unitOfWork.Teams.FindAsync(t => t.SeasonId == id)).ToList();
-            var categories = (await _unitOfWork.Categories.FindAsync(c => c.SeasonId == id)).ToList();
-            var rankingSnapshots = (await _unitOfWork.RankingSnapshots.FindAsync(rs => rs.SeasonId == id)).ToList();
-            var teamMembers = (await _unitOfWork.TeamMembers.FindAsync(tm => teams.Select(t => t.Id).Contains(tm.TeamId))).ToList();
-
-            var teamIds = teams.Select(t => t.Id).ToHashSet();
-            var categoryIds = categories.Select(c => c.Id).ToHashSet();
-            var scores = (await _unitOfWork.Scores.GetAllAsync())
-                .Where(score => teamIds.Contains(score.TeamId) || categoryIds.Contains(score.CategoryId))
-                .ToList();
-            var memberIds = teamMembers.Select(m => m.Id).ToHashSet();
-            var memberScores = (await _unitOfWork.MemberScores.GetAllAsync())
-                .Where(score => memberIds.Contains(score.TeamMemberId) || categoryIds.Contains(score.CategoryId))
-                .ToList();
-
-            foreach (var memberScore in memberScores)
-            {
-                _unitOfWork.MemberScores.Delete(memberScore);
-            }
-            await _unitOfWork.SaveChangesAsync();
-
-            foreach (var score in scores)
-            {
-                _unitOfWork.Scores.Delete(score);
-            }
-            await _unitOfWork.SaveChangesAsync();
-
-            foreach (var snapshot in rankingSnapshots)
-            {
-                _unitOfWork.RankingSnapshots.Delete(snapshot);
-            }
-            await _unitOfWork.SaveChangesAsync();
-
-            foreach (var member in teamMembers)
-            {
-                _unitOfWork.TeamMembers.Delete(member);
-            }
-            await _unitOfWork.SaveChangesAsync();
-
-            foreach (var team in teams)
-            {
-                _unitOfWork.Teams.Delete(team);
-            }
-            await _unitOfWork.SaveChangesAsync();
-
-            foreach (var category in categories)
-            {
-                _unitOfWork.Categories.Delete(category);
-            }
-            await _unitOfWork.SaveChangesAsync();
-
+            // SQLite FK cascades are defined on Teams, Categories, and RankingSnapshots.
             _unitOfWork.Seasons.Delete(season);
             await _unitOfWork.SaveChangesAsync();
             return true;

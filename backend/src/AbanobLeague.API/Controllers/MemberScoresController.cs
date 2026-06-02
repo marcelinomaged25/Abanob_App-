@@ -23,6 +23,13 @@ namespace AbanobLeague.API.Controllers
             return Ok(result);
         }
 
+        [HttpGet("season/{seasonId}/leaderboard")]
+        public async Task<IActionResult> GetLeaderboard(Guid seasonId)
+        {
+            var result = await _memberScoreService.GetIndividualLeaderboardAsync(seasonId);
+            return Ok(result);
+        }
+
         [HttpGet("member/{teamMemberId}")]
         public async Task<IActionResult> GetByMember(Guid teamMemberId)
         {

@@ -26,7 +26,9 @@ export const useTeams = (seasonId?: string, autoFetch: boolean = true) => {
     }
   }, [seasonId, autoFetch, fetchTeams]);
 
-  const createTeam = async (data: Omit<Team, 'id' | 'createdAt' | 'seasonName'>) => {
+  const createTeam = async (
+    data: Pick<Team, 'name' | 'description' | 'seasonId'> & { memberNames?: string[]; logoUrl?: string }
+  ) => {
     setLoading(true);
     try {
       const newTeam = await teamService.createTeam(data);
@@ -40,7 +42,7 @@ export const useTeams = (seasonId?: string, autoFetch: boolean = true) => {
     }
   };
 
-  const updateTeam = async (id: string, data: Omit<Team, 'createdAt' | 'seasonName'>) => {
+  const updateTeam = async (id: string, data: Pick<Team, 'name' | 'description'> & { id?: string; logoUrl?: string; seasonId?: string }) => {
     setLoading(true);
     try {
       const updated = await teamService.updateTeam(id, data);

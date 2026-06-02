@@ -19,10 +19,20 @@ namespace AbanobLeague.Application.DTOs.Scores
 
     public class UpdateScoreDto
     {
+        public Guid? ScoreId { get; set; }
         public Guid TeamId { get; set; }
         public Guid CategoryId { get; set; }
         public int ScoreValue { get; set; }
         public string Notes { get; set; } = string.Empty;
+        public DateTime? UpdatedAt { get; set; }
+    }
+
+    public class ScoreHistoryEntryDto
+    {
+        public Guid Id { get; set; }
+        public int ScoreValue { get; set; }
+        public string Notes { get; set; } = string.Empty;
+        public DateTime UpdatedAt { get; set; }
     }
 
     public class ScoreMatrixDto
@@ -44,5 +54,7 @@ namespace AbanobLeague.Application.DTOs.Scores
         public Guid CategoryId { get; set; }
         public int? ScoreValue { get; set; }
         public string Notes { get; set; } = string.Empty;
+        public DateTime? UpdatedAt { get; set; }
+        public List<ScoreHistoryEntryDto> History { get; set; } = new List<ScoreHistoryEntryDto>();
     }
 }

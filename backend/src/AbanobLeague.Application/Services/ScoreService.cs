@@ -37,8 +37,15 @@ namespace AbanobLeague.Application.Services
             if (dto.ScoreValue < 0 || dto.ScoreValue > category.MaxScore)
                 throw new ArgumentException($"Score must be between 0 and {category.MaxScore}.");
 
-            var scores = await _unitOfWork.Scores.FindAsync(s => s.TeamId == dto.TeamId && s.CategoryId == dto.CategoryId);
-            var existingScore = scores.FirstOrDefault();
+            Score? existingScore = null;
+            if (dto.ScoreId.HasValue)
+            {
+                existingScore = await _unitOfWork.Scores.GetByIdAsync(dto.ScoreId.Value);
+                if (existingScore != null && (existingScore.TeamId != dto.TeamId || existingScore.CategoryId != dto.CategoryId))
+                {
+                    throw new ArgumentException("Score entry mismatch.");
+                }
+            }
 
             string oldValue;
             string newValue = $"Score = {dto.ScoreValue}, Notes = {dto.Notes}";
@@ -49,7 +56,7 @@ namespace AbanobLeague.Application.Services
                 oldValue = $"Score = {existingScore.ScoreValue}, Notes = {existingScore.Notes}";
                 existingScore.ScoreValue = dto.ScoreValue;
                 existingScore.Notes = dto.Notes;
-                existingScore.UpdatedAt = DateTime.UtcNow;
+                existingScore.UpdatedAt = dto.UpdatedAt ?? DateTime.UtcNow;
                 _unitOfWork.Scores.Update(existingScore);
                 scoreEntity = existingScore;
             }
@@ -63,7 +70,7 @@ namespace AbanobLeague.Application.Services
                     CategoryId = dto.CategoryId,
                     ScoreValue = dto.ScoreValue,
                     Notes = dto.Notes,
-                    UpdatedAt = DateTime.UtcNow
+                    UpdatedAt = dto.UpdatedAt ?? DateTime.UtcNow
                 };
                 await _unitOfWork.Scores.AddAsync(scoreEntity);
             }
@@ -101,7 +108,7 @@ namespace AbanobLeague.Application.Services
 
             var allScores = await _unitOfWork.Scores.GetAllAsync();
             var scoresList = allScores.Where(s => categoriesList.Select(c => c.Id).Contains(s.CategoryId)).ToList();
-            var scoreMap = scoresList.ToDictionary(s => (s.TeamId, s.CategoryId));
+            var scoreMap = scoresList.GroupBy(s => (s.TeamId, s.CategoryId)).ToDictionary(g => g.Key, g => g.ToList());
 
             var rows = new List<ScoreMatrixRowDto>();
 
@@ -110,12 +117,29 @@ namespace AbanobLeague.Application.Services
                 var rowScores = new List<ScoreMatrixCellDto>();
                 foreach (var cat in categoriesList)
                 {
-                    scoreMap.TryGetValue((team.Id, cat.Id), out var score);
+                    scoreMap.TryGetValue((team.Id, cat.Id), out var cellScores);
+                    int? totalValue = null;
+                    var history = new List<ScoreHistoryEntryDto>();
+
+                    if (cellScores != null && cellScores.Any())
+                    {
+                        totalValue = cellScores.Sum(s => s.ScoreValue);
+                        history = cellScores.OrderByDescending(s => s.UpdatedAt).Select(s => new ScoreHistoryEntryDto
+                        {
+                            Id = s.Id,
+                            ScoreValue = s.ScoreValue,
+                            Notes = s.Notes,
+                            UpdatedAt = s.UpdatedAt
+                        }).ToList();
+                    }
+
                     rowScores.Add(new ScoreMatrixCellDto
                     {
                         CategoryId = cat.Id,
-                        ScoreValue = score?.ScoreValue,
-                        Notes = score?.Notes ?? string.Empty
+                        ScoreValue = totalValue,
+                        Notes = history.FirstOrDefault()?.Notes ?? string.Empty,
+                        UpdatedAt = history.FirstOrDefault()?.UpdatedAt,
+                        History = history
                     });
                 }
 

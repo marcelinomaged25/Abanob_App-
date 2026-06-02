@@ -89,8 +89,8 @@ namespace AbanobLeague.Infrastructure.Data
                     .HasForeignKey(s => s.CategoryId)
                     .OnDelete(DeleteBehavior.Cascade); 
                     
-                // Unique index to prevent duplicate scores for team + category
-                entity.HasIndex(s => new { s.TeamId, s.CategoryId }).IsUnique();
+                // Index for team + category queries (multiple allowed for history)
+                entity.HasIndex(s => new { s.TeamId, s.CategoryId });
             });
 
             // Member Score Configuration
@@ -109,7 +109,7 @@ namespace AbanobLeague.Infrastructure.Data
                     .HasForeignKey(ms => ms.CategoryId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasIndex(ms => new { ms.TeamMemberId, ms.CategoryId }).IsUnique();
+                entity.HasIndex(ms => new { ms.TeamMemberId, ms.CategoryId });
             });
 
             // AdminUser Configuration

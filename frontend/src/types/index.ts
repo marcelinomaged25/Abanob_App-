@@ -64,6 +64,13 @@ export interface Score {
   updatedAt: string;
 }
 
+export interface ScoreHistoryEntry {
+  id: string;
+  scoreValue: number;
+  notes: string;
+  updatedAt: string;
+}
+
 export interface CategoryScore {
   categoryId: string;
   categoryName: string;
@@ -91,6 +98,8 @@ export interface ScoreMatrixCell {
   categoryId: string;
   scoreValue: number | null;
   notes: string;
+  updatedAt?: string;
+  history: ScoreHistoryEntry[];
 }
 
 export interface ScoreMatrixRow {
@@ -105,10 +114,19 @@ export interface ScoreMatrix {
   rows: ScoreMatrixRow[];
 }
 
+export interface MemberScoreHistoryEntry {
+  id: string;
+  scoreValue: number;
+  notes: string;
+  updatedAt: string;
+}
+
 export interface MemberScoreMatrixCell {
   categoryId: string;
   scoreValue: number | null;
   notes: string;
+  updatedAt?: string;
+  history: MemberScoreHistoryEntry[];
 }
 
 export interface MemberScoreMatrixRow {
@@ -118,7 +136,18 @@ export interface MemberScoreMatrixRow {
   teamMemberId: string;
   teamMemberName: string;
   displayOrder: number;
+  totalScore: number;
   scores: MemberScoreMatrixCell[];
+}
+
+export interface MemberLeaderboardEntry {
+  rank: number;
+  teamMemberId: string;
+  teamMemberName: string;
+  teamId: string;
+  teamName: string;
+  logoUrl: string;
+  totalScore: number;
 }
 
 export interface MemberScoreMatrix {

@@ -4,6 +4,7 @@ import { useSeasonContext } from '@/context/SeasonContext';
 import { TableSkeleton } from '@/components/LoadingSkeleton';
 import { EmptyState } from '@/components/EmptyState';
 import { SearchInput } from '@/components/SearchInput';
+import { getApiErrorMessage } from '@/utils/apiError';
 import type { Team } from '@/types';
 import { 
   Users, Plus, Trash2, Edit2, 
@@ -12,7 +13,7 @@ import {
 
 export const ManageTeamsPage: React.FC = () => {
   const { selectedSeasonId, selectedSeason } = useSeasonContext();
-  const { teams, loading, createTeam, updateTeam, deleteTeam, uploadTeamLogo } = useTeams(selectedSeasonId);
+  const { teams, loading, error: teamsError, createTeam, updateTeam, deleteTeam, uploadTeamLogo } = useTeams(selectedSeasonId);
   const maxTeamMembers = 10;
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -29,6 +30,9 @@ export const ManageTeamsPage: React.FC = () => {
 
   // Delete Target
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+  const [pageError, setPageError] = useState<string | null>(null);
+  const displayError = pageError || teamsError;
 
   const openCreateModal = () => {
     setEditingTeam(null);
@@ -71,13 +75,15 @@ export const ManageTeamsPage: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    setPageError(null);
+
     if (!selectedSeasonId) {
-      alert('اختر موسمًا نشطًا أولًا قبل إضافة الفريق.');
+      setPageError('اختر موسمًا من القائمة أعلى الصفحة قبل إضافة الفريق.');
       return;
     }
 
     if (!name.trim()) {
-      alert('اكتب اسم الفريق أولًا.');
+      setPageError('اكتب اسم الفريق أولًا.');
       return;
     }
 
@@ -86,30 +92,25 @@ export const ManageTeamsPage: React.FC = () => {
       .filter(Boolean)
       .slice(0, maxTeamMembers);
 
-    const payload = {
-      name,
-      description,
-      logoUrl: editingTeam ? editingTeam.logoUrl : '/uploads/logos/default-team.png',
-      seasonId: selectedSeasonId,
-      memberNames: editingTeam ? undefined : normalizedMemberNames,
-    };
-
     try {
       if (editingTeam) {
-        const updatePayload = {
-          id: editingTeam.id,
-          name: payload.name,
-          description: payload.description,
-          logoUrl: payload.logoUrl,
-          seasonId: payload.seasonId,
-        };
-        await updateTeam(editingTeam.id, updatePayload);
+        await updateTeam(editingTeam.id, {
+          name: name.trim(),
+          description,
+        });
       } else {
-        await createTeam(payload);
+        await createTeam({
+          name: name.trim(),
+          description,
+          logoUrl: '/uploads/logos/default-team.png',
+          seasonId: selectedSeasonId,
+          memberNames: normalizedMemberNames,
+        });
       }
       setModalOpen(false);
     } catch (err) {
       console.error(err);
+      setPageError(getApiErrorMessage(err, 'فشل حفظ بيانات الفريق. يرجى المحاولة مرة أخرى.'));
     }
   };
 
@@ -122,19 +123,26 @@ export const ManageTeamsPage: React.FC = () => {
       await uploadTeamLogo(teamId, file);
     } catch (err) {
       console.error('Failed to upload logo', err);
-      alert('حدث خطأ أثناء تحميل الشعار. يرجى مراجعة حجم الملف وصيغته.');
+      setPageError(getApiErrorMessage(err, 'حدث خطأ أثناء تحميل الشعار. يرجى مراجعة حجم الملف وصيغته.'));
     } finally {
       setUploadingLogoTeamId(null);
     }
   };
 
   const handleDelete = async () => {
-    if (!deleteTargetId) return;
+    if (!deleteTargetId || deleteSubmitting) return;
+    const teamId = deleteTargetId;
+    setDeleteSubmitting(true);
+    setPageError(null);
     try {
-      await deleteTeam(deleteTargetId);
+      await deleteTeam(teamId);
       setDeleteTargetId(null);
     } catch (err) {
       console.error(err);
+      setDeleteTargetId(null);
+      setPageError(getApiErrorMessage(err, 'فشل حذف الفريق. يرجى المحاولة مرة أخرى.'));
+    } finally {
+      setDeleteSubmitting(false);
     }
   };
 
@@ -169,6 +177,15 @@ export const ManageTeamsPage: React.FC = () => {
           <span>إضافة فريق جديد</span>
         </button>
       </div>
+
+      {displayError && (
+        <div
+          role="alert"
+          className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-800 dark:border-rose-950/40 dark:bg-rose-950/20 dark:text-rose-200"
+        >
+          {displayError}
+        </div>
+      )}
 
       {/* Search and Stats */}
       {teams.length > 0 && (
@@ -303,6 +320,12 @@ export const ManageTeamsPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleSave} className="space-y-4 text-right">
+
+              {pageError && modalOpen && (
+                <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-semibold text-rose-800 dark:border-rose-950/40 dark:bg-rose-950/20 dark:text-rose-200">
+                  {pageError}
+                </p>
+              )}
               
               {/* Name */}
               <div className="space-y-1.5">
@@ -422,9 +445,10 @@ export const ManageTeamsPage: React.FC = () => {
               </button>
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-extrabold rounded-xl shadow-md cursor-pointer"
+                disabled={deleteSubmitting}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-extrabold rounded-xl shadow-md cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                حذف نهائي
+                {deleteSubmitting ? 'جاري الحذف...' : 'حذف نهائي'}
               </button>
             </div>
           </div>
