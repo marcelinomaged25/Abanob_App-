@@ -142,4 +142,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+app.MapGet("/", () => "API is running");
+
 app.Run();
