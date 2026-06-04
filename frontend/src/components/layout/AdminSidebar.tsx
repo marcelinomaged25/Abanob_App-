@@ -29,17 +29,18 @@ export const AdminSidebar: React.FC = () => {
   );
 
   return (
-    <aside className="w-64 bg-slate-900 text-slate-300 min-h-screen flex flex-col justify-between border-l border-slate-800 dark:bg-brand-navy-950 transition-colors" dir="rtl">
+    <aside className="w-64 bg-brand-navy-950 text-slate-300 min-h-screen flex flex-col justify-between border-l border-slate-800 transition-colors" dir="rtl">
       
+      {/* Golden accent line */}
+      <div className="h-0.5 bg-gradient-to-l from-brand-gold-500 via-brand-gold-400 to-transparent" />
+
       {/* Upper Content */}
       <div className="flex flex-col">
         
         {/* Admin Header */}
         <div className="h-16 flex items-center px-6 border-b border-slate-800 bg-slate-950/40">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="h-8 w-8 rounded-lg shiny-gold-bg text-brand-navy-950 flex items-center justify-center font-extrabold text-sm">
-              أ
-            </div>
+            <img src="/abanob-icon.png" alt="أبانوب" className="h-8 w-8 rounded-full object-cover" />
             <div className="flex flex-col">
               <span className="text-sm font-extrabold text-white">لوحة الإدارة</span>
               <span className="text-[10px] text-brand-gold-400 font-bold tracking-wider">ABANOB ADMIN</span>
@@ -48,7 +49,7 @@ export const AdminSidebar: React.FC = () => {
         </div>
 
         {/* User Card */}
-        <div className="p-4 mx-3 my-4 bg-slate-950/30 rounded-xl border border-slate-800/80">
+        <div className="p-4 mx-3 my-4 bg-brand-navy-900/40 rounded-xl border border-brand-gold-500/10">
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-full bg-brand-gold-500 text-brand-navy-950 flex items-center justify-center font-extrabold text-sm">
               {user?.fullName?.charAt(0) || 'أ'}

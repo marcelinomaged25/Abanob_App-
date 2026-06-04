@@ -1,11 +1,11 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { useSeasonContext } from '@/context/SeasonContext';
 import { 
-  Trophy, Sun, Moon, LogIn, LayoutDashboard, LogOut, 
-  Menu, X, Calendar, Activity, BarChart2, Award, Users 
+  Sun, Moon, LogIn, LayoutDashboard, LogOut, 
+  Menu, X, Calendar, Activity, BarChart2, Award, Users, Trophy 
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
@@ -27,15 +27,13 @@ export const Header: React.FC = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md dark:border-slate-800 dark:bg-brand-navy-950/80 transition-colors duration-300">
+    <header className="sticky top-0 z-40 w-full border-b border-brand-gold-100/40 bg-white/85 backdrop-blur-md dark:border-brand-gold-500/10 dark:bg-brand-navy-950/92 transition-colors duration-300 shadow-[0_2px_12px_rgba(201,147,29,0.04)] dark:shadow-[0_2px_16px_rgba(201,147,29,0.06)]">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8" dir="rtl">
         
         {/* Left Side: Brand Logo and Title */}
         <div className="flex items-center gap-6">
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl shiny-gold-bg text-brand-navy-950 group-hover:scale-105 transition-transform">
-              <Trophy className="h-5.5 w-5.5" />
-            </div>
+            <img src="/abanob-icon.png" alt="القديس أبانوب" className="h-10 w-10 rounded-full object-cover ring-2 ring-brand-gold-400/50 group-hover:scale-105 transition-transform" />
             <div className="flex flex-col">
               <span className="text-lg font-extrabold tracking-tight text-brand-navy-900 dark:text-white sm:text-xl">
                 دوري القديس أبانوب

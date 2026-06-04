@@ -1,21 +1,19 @@
-﻿import React from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { Trophy, Heart } from 'lucide-react';
+import { Heart } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="w-full bg-slate-900 text-slate-300 py-12 px-4 transition-colors duration-300 dark:bg-brand-navy-950 border-t border-slate-800" dir="rtl">
+    <footer className="w-full bg-brand-navy-950 text-slate-300 py-12 px-4 transition-colors duration-300 dark:bg-brand-navy-950 border-t-2 border-transparent" style={{ borderImage: 'linear-gradient(to left, transparent, #c9931d, #daa830, transparent) 1' }} dir="rtl">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         
         {/* Top Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 border-b border-slate-800">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 border-b border-brand-navy-800">
           
           {/* Column 1: Brand details */}
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl shiny-gold-bg text-brand-navy-950">
-                <Trophy className="h-4.5 w-4.5" />
-              </div>
+              <img src="/abanob-icon.png" alt="القديس أبانوب" className="h-9 w-9 rounded-full object-cover ring-2 ring-brand-gold-400/40" />
               <span className="text-md font-bold text-white tracking-wider">
                 دوري القديس أبانوب الممتاز
               </span>
@@ -43,7 +41,7 @@ export const Footer: React.FC = () => {
           <div className="flex flex-col gap-3">
             <span className="text-sm font-bold text-white tracking-wider">رسالة المنصة</span>
             <p className="text-xs leading-relaxed text-slate-400">
-              "وَلَكِنْ قَبْلَ كُلِّ شَيْءٍ، لِتَكُنْ مَحَبَّتُكُمْ بَعْضِكُمْ لِبَعْضٍ شَدِيدَةً، لِأَنَّ ٱلْمَحَبَّةَ تَسْتُرُ كَثْرَةً مِنَ ٱلْخَطَايَا.
+              "وَلَكِنْ قَبْلَ كُلِّ شَيْءٍ، لِتَكُنْ مَحَبَّتُكُمْ بَعْضِكُمْ لِبَعْضٍ شَدِيدَةً، لِأَنَّ ٱلْمَحَبَّةَ تَسْتُرُ كَثْرَةً مِنَ ٱلْخَطَايَا.
  " (بُطْرُسَ ٱلْأُولَى ٤:٨)
               <br />
 هدفنا إننا نتعلم حاجات جديدة ونكبر روحيًا وطقسيًا مع بعض، ونشجع بعض من خلال منافسة حلوة تخلينا نطلع أحسن ما عندنا. لكن في الآخر الأهم من أي نقاط أو ترتيب هو إن المحبة والاحترام يفضلوا موجودين بيننا دايمًا.            </p>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Trophy, LogIn, Mail, Lock, ShieldAlert } from 'lucide-react';
+import { LogIn, Mail, Lock, ShieldAlert } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const { loginUser, isAuthenticated, isLoading } = useAuth();
@@ -42,15 +42,15 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="w-full min-h-[calc(100vh-12rem)] flex items-center justify-center p-4" dir="rtl">
+    <div className="w-full min-h-[calc(100vh-12rem)] flex items-center justify-center p-4 relative" dir="rtl">
+      {/* Church-inspired decorative background pattern */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(circle at 25% 25%, #c9931d 1px, transparent 1px), radial-gradient(circle at 75% 75%, #c9931d 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
       
-      <div className="w-full max-w-md bg-white dark:bg-brand-navy-900 border border-slate-200 dark:border-brand-navy-800 rounded-3xl p-8 shadow-xl space-y-6 animate-scale-in">
+      <div className="w-full max-w-md bg-white dark:bg-brand-navy-900 border border-brand-gold-200/50 dark:border-brand-gold-500/20 rounded-3xl p-8 shadow-xl space-y-6 animate-scale-in relative church-glow" style={{ boxShadow: '0 0 30px rgba(201, 147, 29, 0.08), 0 20px 60px rgba(0, 0, 0, 0.1)' }}>
         
         {/* Header Title */}
         <div className="text-center space-y-2">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-gold-50 dark:bg-brand-gold-950/20 text-brand-gold-500 mb-2">
-            <Trophy className="h-6 w-6" />
-          </div>
+          <img src="/abanob-icon.png" alt="القديس أبانوب" className="inline-block h-14 w-14 rounded-full object-cover ring-2 ring-brand-gold-400/50 mb-2" />
           <h2 className="text-xl font-black text-slate-900 dark:text-white">بوابة الإدارة الإلكترونية</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             سجل دخولك لإدخال درجات الفئات وإدارة الفرق والمواسم

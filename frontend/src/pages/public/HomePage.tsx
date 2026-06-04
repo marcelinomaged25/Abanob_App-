@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { useSeasonContext } from '@/context/SeasonContext';
 import { useStandings } from '@/hooks/useStandings';
@@ -17,18 +17,18 @@ export const HomePage: React.FC = () => {
     <div className="w-full space-y-12 pb-12" dir="rtl">
       
       {/* Premium Hero Section */}
-      <section className="relative overflow-hidden rounded-3xl bg-slate-900 text-white p-8 sm:p-12 lg:p-16 border border-slate-800 shadow-xl transition-all duration-300 dark:bg-brand-navy-950">
+      <section className="relative overflow-hidden rounded-3xl bg-white dark:bg-gradient-to-br dark:from-brand-navy-950 dark:via-brand-navy-900 dark:to-brand-navy-950 text-slate-900 dark:text-white p-8 sm:p-12 lg:p-16 border border-slate-200 dark:border-slate-800 shadow-xl transition-all duration-300">
         
         {/* Decorative Grid / Glow */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-brand-gold-950/15 via-brand-navy-900/40 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-brand-gold-100/50 via-transparent to-transparent dark:from-brand-gold-900/20 dark:via-amber-950/10 pointer-events-none" />
         <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
           
           <div className="flex-1 space-y-4 text-right">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-brand-gold-500/10 text-brand-gold-400 border border-brand-gold-500/20">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-brand-gold-50 dark:bg-brand-gold-500/10 text-brand-gold-600 dark:text-brand-gold-400 border border-brand-gold-200 dark:border-brand-gold-500/20">
               <Sparkles className="h-3.5 w-3.5" />
-              <span> دوري القديس أبانوب </span>
+              <span> ✝ دوري القديس أبانوب </span>
             </div>
             
             <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
@@ -36,7 +36,7 @@ export const HomePage: React.FC = () => {
               <span className="shiny-gold-text">دوري القديس أبانوب الممتاز</span>
             </h1>
             
-            <p className="text-xs sm:text-sm text-slate-400 font-medium leading-relaxed max-w-xl">
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium leading-relaxed max-w-xl">
               منصة التقييم والترتيب الرسمية لبطولات كنيستنا العامرة. نهدف لخلق روح المنافسة الشريفة والنمو الروحي والفكري المستمر. تابع لحظة بلحظة الترتيب، النقاط، ومصفوفة درجات جميع المجموعات والفرق.
             </p>
 
@@ -50,7 +50,7 @@ export const HomePage: React.FC = () => {
               </RouterLink>
               <RouterLink
                 to="/live"
-                className="inline-flex h-10 items-center justify-center gap-1.5 px-5 py-2 text-xs font-bold border border-slate-700 text-slate-300 rounded-xl hover:bg-slate-800 transition-all cursor-pointer"
+                className="inline-flex h-10 items-center justify-center gap-1.5 px-5 py-2 text-xs font-bold border border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 transition-all cursor-pointer"
               >
                 <span>متابعة مصفوفة المباشر</span>
               </RouterLink>
@@ -58,9 +58,11 @@ export const HomePage: React.FC = () => {
           </div>
 
           {/* Right Icon Shield Showcase */}
-          <div className="flex-shrink-0 flex items-center justify-center w-36 h-36 sm:w-48 sm:h-48 rounded-3xl bg-slate-950/40 border border-slate-800/80 shadow-inner relative animate-float">
-            <Trophy className="h-20 w-20 sm:h-28 sm:w-28 text-brand-gold-500/80 filter drop-shadow-[0_0_15px_rgba(212,175,55,0.2)]" />
-          </div>
+          <img
+            src="/abanob-icon.png"
+            alt="القديس أبانوب"
+            className="flex-shrink-0 h-40 w-40 sm:h-52 sm:w-52 rounded-full object-cover ring-4 ring-brand-gold-400/40 shadow-[0_0_30px_rgba(212,175,55,0.2)] animate-float"
+          />
 
         </div>
       </section>
@@ -88,7 +90,7 @@ export const HomePage: React.FC = () => {
       ) : quickStats ? (
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           
-          <div className="p-6 bg-white dark:bg-brand-navy-900 border border-slate-200 dark:border-brand-navy-800 rounded-2xl flex flex-col justify-between shadow-sm relative group hover:shadow-md transition-shadow">
+          <div className="p-6 bg-white dark:bg-brand-navy-900 border border-slate-200 dark:border-brand-navy-800 border-t-2 border-t-brand-gold-400/30 rounded-2xl flex flex-col justify-between shadow-sm relative group hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
               <span className="text-xs font-bold">الفرق المشاركة</span>
               <div className="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-950/20 text-blue-500 flex items-center justify-center font-extrabold">
@@ -103,7 +105,7 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-6 bg-white dark:bg-brand-navy-900 border border-slate-200 dark:border-brand-navy-800 rounded-2xl flex flex-col justify-between shadow-sm relative group hover:shadow-md transition-shadow">
+          <div className="p-6 bg-white dark:bg-brand-navy-900 border border-slate-200 dark:border-brand-navy-800 border-t-2 border-t-brand-gold-400/30 rounded-2xl flex flex-col justify-between shadow-sm relative group hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
               <span className="text-xs font-bold">فئات التقييم</span>
               <div className="h-8 w-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/20 text-indigo-500 flex items-center justify-center font-extrabold">
@@ -118,7 +120,7 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-6 bg-white dark:bg-brand-navy-900 border border-slate-200 dark:border-brand-navy-800 rounded-2xl flex flex-col justify-between shadow-sm relative group hover:shadow-md transition-shadow">
+          <div className="p-6 bg-white dark:bg-brand-navy-900 border border-slate-200 dark:border-brand-navy-800 border-t-2 border-t-brand-gold-400/30 rounded-2xl flex flex-col justify-between shadow-sm relative group hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
               <span className="text-xs font-bold">المتصدر الحالي</span>
               <div className="h-8 w-8 rounded-lg bg-amber-50 dark:bg-amber-950/20 text-amber-500 flex items-center justify-center font-extrabold">
@@ -133,7 +135,7 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-6 bg-white dark:bg-brand-navy-900 border border-slate-200 dark:border-brand-navy-800 rounded-2xl flex flex-col justify-between shadow-sm relative group hover:shadow-md transition-shadow">
+          <div className="p-6 bg-white dark:bg-brand-navy-900 border border-slate-200 dark:border-brand-navy-800 border-t-2 border-t-brand-gold-400/30 rounded-2xl flex flex-col justify-between shadow-sm relative group hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
               <span className="text-xs font-bold">أعلى درجة مسجلة</span>
               <div className="h-8 w-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 text-emerald-500 flex items-center justify-center font-extrabold">
@@ -157,7 +159,8 @@ export const HomePage: React.FC = () => {
 
       {/* Podium PodiumDisplay Section */}
       {leaderboard.length > 0 && (
-        <section className="bg-white dark:bg-brand-navy-900 border border-slate-200 dark:border-brand-navy-800 rounded-3xl p-6 sm:p-8 shadow-sm">
+        <section className="bg-white dark:bg-brand-navy-900 border border-slate-200 dark:border-brand-navy-800 rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-brand-gold-500/5 via-transparent to-transparent pointer-events-none" />
           <div className="text-center space-y-2 mb-6">
             <h3 className="text-lg font-black shiny-gold-text">منصة التتويج الممتازة</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
@@ -171,7 +174,7 @@ export const HomePage: React.FC = () => {
       {/* Action cards for other public sub-sections */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
         
-        <div className="p-8 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between dark:bg-brand-navy-900 dark:border-brand-navy-800">
+        <div className="p-8 rounded-2xl bg-white border border-slate-200 border-r-2 border-r-brand-gold-400/30 shadow-sm flex flex-col justify-between dark:bg-brand-navy-900 dark:border-brand-navy-800">
           <div className="space-y-2">
             <span className="text-2xl">📊</span>
             <h3 className="text-base font-black text-slate-800 dark:text-white">جدول الترتيب والمصفوفة الكاملة</h3>
@@ -188,7 +191,7 @@ export const HomePage: React.FC = () => {
           </RouterLink>
         </div>
 
-        <div className="p-8 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between dark:bg-brand-navy-900 dark:border-brand-navy-800">
+        <div className="p-8 rounded-2xl bg-white border border-slate-200 border-r-2 border-r-brand-gold-400/30 shadow-sm flex flex-col justify-between dark:bg-brand-navy-900 dark:border-brand-navy-800">
           <div className="space-y-2">
             <span className="text-2xl">📈</span>
             <h3 className="text-base font-black text-slate-800 dark:text-white">التحليلات والمؤشرات البيانية</h3>

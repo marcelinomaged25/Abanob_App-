@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -130,19 +130,7 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<AppDbContext>();
         var passwordHasher = services.GetRequiredService<IPasswordHasher>();
 
-        try
-        {
-            await context.Database.MigrateAsync();
-        }
-        catch (Exception migrateEx)
-        {
-            var migrateLogger = services.GetRequiredService<ILogger<Program>>();
-            migrateLogger.LogWarning(
-                migrateEx,
-                "EF migrate skipped or failed (legacy database). Applying schema repair.");
-        }
-
-        await DatabaseSchemaRepair.EnsureTeamMembersSchemaAsync(context);
+        await context.Database.MigrateAsync();
         await DataSeeder.SeedAsync(context, passwordHasher);
         var dbPath = context.Database.GetDbConnection().DataSource;
         Console.WriteLine($"Database ready at: {dbPath}");

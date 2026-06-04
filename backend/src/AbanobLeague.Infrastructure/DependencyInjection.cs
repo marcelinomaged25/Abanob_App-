@@ -18,19 +18,10 @@ namespace AbanobLeague.Infrastructure
             IConfiguration configuration,
             string contentRootPath)
         {
-            var configured = configuration.GetConnectionString("DefaultConnection") ?? "Data Source=AbanobLeague.db";
-            var dbFile = configured.StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase)
-                ? configured["Data Source=".Length..].Trim()
-                : configured.Trim();
-
-            var dbPath = Path.IsPathRooted(dbFile)
-                ? dbFile
-                : Path.Combine(contentRootPath, dbFile);
-
-            var connectionString = $"Data Source={dbPath}";
+            var connectionString = configuration.GetConnectionString("DefaultConnection") ?? "Host=localhost;Database=AbanobLeague;Username=postgres;Password=postgres";
 
             services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlite(
+                options.UseNpgsql(
                     connectionString,
                     b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)
                 )

@@ -41,9 +41,9 @@ export const AdminLayout: React.FC = () => {
       <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
         
         {/* Admin Header Navbar */}
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 dark:bg-slate-900 dark:border-slate-800 transition-colors">
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 dark:bg-brand-navy-950 dark:border-brand-navy-900 transition-colors">
           <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
-            <ShieldAlert className="h-4.5 w-4.5 text-brand-gold-500" />
+            <ShieldAlert className="h-4.5 w-4.5 text-brand-gold-400" />
             <span className="text-xs font-bold">بوابة التحكم الإدارية</span>
             <span className="text-slate-300 dark:text-slate-700">|</span>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-navy-50 text-brand-navy-700 dark:bg-brand-navy-900 dark:text-brand-gold-400">

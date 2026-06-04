@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AbanobLeague.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+09e9f47bfb3bc66119ecaa1f87730cc186671964")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fa29235ef1e8b15856113176ea78040ab62201b9")]
 [assembly: System.Reflection.AssemblyProductAttribute("AbanobLeague.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AbanobLeague.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
