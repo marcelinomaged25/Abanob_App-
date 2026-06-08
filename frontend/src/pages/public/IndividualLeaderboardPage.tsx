@@ -104,10 +104,10 @@ export const IndividualLeaderboardPage: React.FC = () => {
               <table className="w-full text-right border-collapse">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-brand-navy-900 border-b border-slate-200 dark:border-brand-navy-800 text-xs font-black text-slate-500 dark:text-slate-400">
-                    <th className="py-3.5 px-5 w-14 text-center">#</th>
-                    <th className="py-3.5 px-5">الفرد</th>
-                    <th className="py-3.5 px-5">الفريق</th>
-                    <th className="py-3.5 px-5 text-center">النقاط</th>
+                    <th className="py-3 px-3 sm:py-3.5 sm:px-5 w-10 sm:w-14 text-center">#</th>
+                    <th className="py-3 px-3 sm:py-3.5 sm:px-5">الفرد</th>
+                    <th className="py-3 px-3 sm:py-3.5 sm:px-5 hidden sm:table-cell">الفريق</th>
+                    <th className="py-3 px-3 sm:py-3.5 sm:px-5 text-center">النقاط</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-brand-navy-900 text-sm">
@@ -127,14 +127,14 @@ export const IndividualLeaderboardPage: React.FC = () => {
                         }`}
                       >
                         {/* Rank */}
-                        <td className="py-4 px-5 text-center">
+                        <td className="py-3 px-3 sm:py-4 sm:px-5 text-center">
                           <div className="flex items-center justify-center">
                             <RankBadge rank={entry.rank} />
                           </div>
                         </td>
 
                         {/* Member */}
-                        <td className="py-4 px-5">
+                        <td className="py-3 px-3 sm:py-4 sm:px-5">
                           <div className="flex items-center gap-3">
                             <div className={`h-9 w-9 rounded-xl flex items-center justify-center font-black text-xs shrink-0 border ${
                               entry.rank === 1
@@ -163,7 +163,7 @@ export const IndividualLeaderboardPage: React.FC = () => {
                         </td>
 
                         {/* Team */}
-                        <td className="py-4 px-5">
+                        <td className="py-3 px-3 sm:py-4 sm:px-5 hidden sm:table-cell">
                           <div className="inline-flex items-center gap-1.5 bg-slate-100 dark:bg-brand-navy-900 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-brand-navy-800">
                             <Shield className="h-3 w-3 text-brand-gold-500" />
                             <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">{entry.teamName}</span>
@@ -171,7 +171,7 @@ export const IndividualLeaderboardPage: React.FC = () => {
                         </td>
 
                         {/* Score */}
-                        <td className="py-4 px-5 text-center">
+                        <td className="py-3 px-3 sm:py-4 sm:px-5 text-center">
                           <span className={`font-black text-xl ${
                             isTop3 ? 'text-brand-gold-500' : 'text-slate-700 dark:text-white'
                           }`}>

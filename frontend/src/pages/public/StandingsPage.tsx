@@ -215,15 +215,15 @@ export const StandingsPage: React.FC = () => {
             <table className="w-full text-right border-collapse">
               <thead>
                 <tr className="bg-slate-50 dark:bg-brand-navy-900 border-b border-slate-200 dark:border-brand-navy-800 text-xs font-black text-slate-700 dark:text-slate-300">
-                  <th className="py-4 px-6 text-center w-20">الترتيب</th>
-                  <th className="py-4 px-4 w-52">اسم الفريق</th>
+                  <th className="py-3 px-3 sm:py-4 sm:px-6 text-center w-16 sm:w-20">الترتيب</th>
+                  <th className="py-3 px-3 sm:py-4 sm:px-4 w-36 sm:w-52">اسم الفريق</th>
                   
                   {/* Category Headers (Dynamic) */}
                   {standings.categories.map((cat) => (
                     <th 
                       key={cat.id} 
                       onClick={() => handleSort(cat.id)}
-                      className="py-4 px-3 text-center cursor-pointer hover:bg-slate-100 dark:hover:bg-brand-navy-800 select-none transition-colors"
+                      className="py-3 px-2 sm:py-4 sm:px-3 text-center cursor-pointer hover:bg-slate-100 dark:hover:bg-brand-navy-800 select-none transition-colors"
                     >
                       <div className="flex items-center justify-center gap-1">
                         <span>{cat.name}</span>
@@ -236,14 +236,14 @@ export const StandingsPage: React.FC = () => {
                   {/* Total Score Header */}
                   <th 
                     onClick={() => handleSort('totalScore')}
-                    className="py-4 px-6 text-center cursor-pointer hover:bg-slate-100 dark:hover:bg-brand-navy-800 select-none transition-colors w-32 border-r border-slate-200 dark:border-brand-navy-800 bg-brand-navy-50/20 dark:bg-brand-navy-900/40"
+                    className="py-3 px-3 sm:py-4 sm:px-6 text-center cursor-pointer hover:bg-slate-100 dark:hover:bg-brand-navy-800 select-none transition-colors w-24 sm:w-32 border-r border-slate-200 dark:border-brand-navy-800 bg-brand-navy-50/20 dark:bg-brand-navy-900/40"
                   >
                     <div className="flex items-center justify-center gap-1 text-brand-navy-800 dark:text-brand-gold-400">
                       <span>المجموع</span>
                       <ArrowUpDown className="h-3 w-3" />
                     </div>
                   </th>
-                  <th className="py-4 px-6 text-center w-24">ملف الفريق</th>
+                  <th className="py-3 px-3 sm:py-4 sm:px-6 text-center w-16 sm:w-24">ملف الفريق</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-brand-navy-900 text-xs text-slate-800 dark:text-slate-200">
@@ -259,12 +259,12 @@ export const StandingsPage: React.FC = () => {
                       }`}
                     >
                       {/* Rank Badge */}
-                      <td className="py-4 px-6 text-center">
+                      <td className="py-3 px-3 sm:py-4 sm:px-6 text-center">
                         <RankBadge rank={row.rank} />
                       </td>
 
                       {/* Team Name */}
-                      <td className="py-4 px-4">
+                      <td className="py-3 px-3 sm:py-4 sm:px-4">
                         <div className="flex items-center gap-3">
                           <div className="h-9 w-9 rounded-full bg-slate-100 dark:bg-brand-navy-900 overflow-hidden flex items-center justify-center border border-slate-200 dark:border-brand-navy-800 font-extrabold text-[10px] text-brand-gold-500 shadow-sm shrink-0">
                             {row.logoUrl && !row.logoUrl.includes('default') ? (
@@ -285,7 +285,7 @@ export const StandingsPage: React.FC = () => {
                         const isPerfect = scoreVal === scoreMax && scoreMax > 0;
 
                         return (
-                          <td key={cat.id} className="py-4 px-3 text-center">
+                          <td key={cat.id} className="py-3 px-2 sm:py-4 sm:px-3 text-center">
                             <span 
                               className={`px-2 py-1 rounded-md ${
                                 isPerfect 
@@ -300,12 +300,12 @@ export const StandingsPage: React.FC = () => {
                       })}
 
                       {/* Total Score */}
-                      <td className="py-4 px-6 text-center font-black text-sm text-brand-navy-700 dark:text-brand-gold-400 bg-brand-navy-50/10 dark:bg-brand-navy-900/20 border-r border-slate-200 dark:border-brand-navy-800">
+                      <td className="py-3 px-3 sm:py-4 sm:px-6 text-center font-black text-sm text-brand-navy-700 dark:text-brand-gold-400 bg-brand-navy-50/10 dark:bg-brand-navy-900/20 border-r border-slate-200 dark:border-brand-navy-800">
                         {row.totalScore}
                       </td>
 
                       {/* View Profile Action */}
-                      <td className="py-4 px-6 text-center">
+                      <td className="py-3 px-3 sm:py-4 sm:px-6 text-center">
                         <Link
                           to={`/team/${row.teamId}`}
                           className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:text-brand-navy-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-brand-gold-400 dark:hover:bg-brand-navy-900 transition-colors"

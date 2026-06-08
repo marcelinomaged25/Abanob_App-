@@ -29,7 +29,7 @@ export const AdminSidebar: React.FC = () => {
   );
 
   return (
-    <aside className="w-64 bg-brand-navy-950 text-slate-300 min-h-screen flex flex-col justify-between border-l border-slate-800 transition-colors" dir="rtl">
+    <aside className="hidden lg:flex w-64 bg-brand-navy-950 text-slate-300 min-h-screen flex-col justify-between border-l border-slate-800 transition-colors" dir="rtl">
       
       {/* Golden accent line */}
       <div className="h-0.5 bg-gradient-to-l from-brand-gold-500 via-brand-gold-400 to-transparent" />

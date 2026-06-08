@@ -110,7 +110,7 @@ export const TeamProfilePage: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-6 sm:border-r border-slate-800 sm:pr-8">
+          <div className="flex items-center gap-4 sm:gap-6 sm:border-r border-slate-800 sm:pr-8 flex-wrap justify-center sm:justify-start">
             <div className="text-center">
               <span className="text-[10px] font-black text-slate-400 block">مجموع النقاط</span>
               <span className="text-3xl font-black text-brand-gold-400 tracking-tight">{totalScore}</span>
