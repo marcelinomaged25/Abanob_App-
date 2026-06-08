@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import { PublicLayout } from '@/components/layout/PublicLayout'
 import { AdminLayout } from '@/components/layout/AdminLayout'
 
@@ -23,30 +24,33 @@ import { AuditLogsPage } from '@/pages/admin/AuditLogsPage'
 
 function App() {
   return (
-    <Routes>
-      {/* Public Routes */}
-      <Route element={<PublicLayout />}>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/standings" element={<StandingsPage />} />
-        <Route path="/members" element={<IndividualLeaderboardPage />} />
-        <Route path="/team/:id" element={<TeamProfilePage />} />
-        <Route path="/live" element={<LeaderboardPage />} />
-        <Route path="/hall-of-fame" element={<HallOfFamePage />} />
-        <Route path="/analytics" element={<AnalyticsPage />} />
-        <Route path="/login" element={<LoginPage />} />
-      </Route>
+    <>
+      <Routes>
+        {/* Public Routes */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/standings" element={<StandingsPage />} />
+          <Route path="/members" element={<IndividualLeaderboardPage />} />
+          <Route path="/team/:id" element={<TeamProfilePage />} />
+          <Route path="/live" element={<LeaderboardPage />} />
+          <Route path="/hall-of-fame" element={<HallOfFamePage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/login" element={<LoginPage />} />
+        </Route>
 
-      {/* Admin Routes */}
-      <Route element={<AdminLayout />}>
-        <Route path="/admin/dashboard" element={<DashboardPage />} />
-        <Route path="/admin/seasons" element={<ManageSeasonsPage />} />
-        <Route path="/admin/teams" element={<ManageTeamsPage />} />
-        <Route path="/admin/categories" element={<ManageCategoriesPage />} />
-        <Route path="/admin/scores" element={<ManageScoresPage />} />
-        <Route path="/admin/member-scores" element={<ManageMemberScoresPage />} />
-        <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
-      </Route>
-    </Routes>
+        {/* Admin Routes */}
+        <Route element={<AdminLayout />}>
+          <Route path="/admin/dashboard" element={<DashboardPage />} />
+          <Route path="/admin/seasons" element={<ManageSeasonsPage />} />
+          <Route path="/admin/teams" element={<ManageTeamsPage />} />
+          <Route path="/admin/categories" element={<ManageCategoriesPage />} />
+          <Route path="/admin/scores" element={<ManageScoresPage />} />
+          <Route path="/admin/member-scores" element={<ManageMemberScoresPage />} />
+          <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
+        </Route>
+      </Routes>
+      <SpeedInsights />
+    </>
   )
 }
 
