@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AbanobLeague.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fa29235ef1e8b15856113176ea78040ab62201b9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cc6f8f6054cb1b99e76256789f0d3369bbe8da59")]
 [assembly: System.Reflection.AssemblyProductAttribute("AbanobLeague.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AbanobLeague.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -107,8 +107,8 @@ namespace AbanobLeague.Application.Services
             if (team.SeasonId != category.SeasonId)
                 throw new ArgumentException("Team member and Category do not belong to the same season.");
 
-            if (dto.ScoreValue < 0 || dto.ScoreValue > category.MaxScore)
-                throw new ArgumentException($"Score must be between 0 and {category.MaxScore}.");
+            if (dto.ScoreValue > category.MaxScore)
+                throw new ArgumentException($"Score cannot exceed {category.MaxScore}.");
 
             MemberScore? existingScore = null;
             if (dto.ScoreId.HasValue)
@@ -167,6 +167,35 @@ namespace AbanobLeague.Application.Services
             scoreEntity.Category = category;
 
             return scoreEntity.ToDto();
+        }
+
+        public async Task<bool> DeleteMemberScoreAsync(Guid scoreId, Guid userId)
+        {
+            var score = await _unitOfWork.MemberScores.GetByIdAsync(scoreId);
+            if (score == null) return false;
+
+            var member = await _unitOfWork.TeamMembers.GetByIdAsync(score.TeamMemberId);
+            if (member == null) return false;
+
+            var team = await _unitOfWork.Teams.GetByIdAsync(member.TeamId);
+            if (team == null) return false;
+
+            var oldValue = $"Score = {score.ScoreValue}, Notes = {score.Notes}";
+            
+            _unitOfWork.MemberScores.Delete(score);
+            await _unitOfWork.SaveChangesAsync();
+
+            await _auditService.LogActionAsync(
+                userId,
+                "DELETE_MEMBER_SCORE",
+                "MemberScore",
+                oldValue,
+                "(Deleted)"
+            );
+
+            await _rankingService.SaveRankingSnapshotAsync(team.SeasonId);
+
+            return true;
         }
 
         public async Task<IEnumerable<MemberScoreDto>> GetScoresByMemberAsync(Guid teamMemberId)

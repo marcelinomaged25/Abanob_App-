@@ -51,11 +51,25 @@ export const useScores = (seasonId?: string, autoFetch: boolean = true) => {
     }
   };
 
+  const removeScore = async (scoreId: string) => {
+    setLoading(true);
+    try {
+      await scoreService.deleteScore(scoreId);
+      await fetchMatrix();
+    } catch (err: any) {
+      setError(err.message || 'فشل حذف الدرجة');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     matrix,
     loading,
     error,
     refetch: fetchMatrix,
     updateScore: updateScoreValue,
+    removeScore,
   };
 };

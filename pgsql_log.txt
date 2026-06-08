@@ -14,3 +14,14 @@
 2026-06-05 00:02:54.389 EEST [5836] LOG:  checkpoint starting: end-of-recovery immediate wait
 2026-06-05 00:02:55.194 EEST [5836] LOG:  checkpoint complete: wrote 967 buffers (5.9%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.067 s, sync=0.722 s, total=0.816 s; sync files=301, longest=0.006 s, average=0.003 s; distance=4559 kB, estimate=4559 kB; lsn=0/19EB4F8, redo lsn=0/19EB4F8
 2026-06-05 00:02:55.427 EEST [27376] LOG:  database system is ready to accept connections
+2026-06-08 12:27:09.966 EEST [27208] LOG:  starting PostgreSQL 16.3, compiled by Visual C++ build 1938, 64-bit
+2026-06-08 12:27:09.970 EEST [27208] LOG:  listening on IPv6 address "::1", port 5432
+2026-06-08 12:27:09.970 EEST [27208] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2026-06-08 12:27:10.085 EEST [5932] LOG:  database system was interrupted; last known up at 2026-06-05 00:18:31 EEST
+2026-06-08 12:27:15.610 EEST [5932] LOG:  database system was not properly shut down; automatic recovery in progress
+2026-06-08 12:27:15.617 EEST [5932] LOG:  redo starts at 0/1A20878
+2026-06-08 12:27:15.617 EEST [5932] LOG:  invalid record length at 0/1A20960: expected at least 24, got 0
+2026-06-08 12:27:15.617 EEST [5932] LOG:  redo done at 0/1A20928 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+2026-06-08 12:27:15.632 EEST [19180] LOG:  checkpoint starting: end-of-recovery immediate wait
+2026-06-08 12:27:15.660 EEST [19180] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.004 s, sync=0.006 s, total=0.038 s; sync files=2, longest=0.003 s, average=0.003 s; distance=0 kB, estimate=0 kB; lsn=0/1A20960, redo lsn=0/1A20960
+2026-06-08 12:27:15.700 EEST [27208] LOG:  database system is ready to accept connections

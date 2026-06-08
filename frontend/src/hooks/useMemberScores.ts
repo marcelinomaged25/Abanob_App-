@@ -54,6 +54,19 @@ export const useMemberScores = (seasonId?: string, autoFetch: boolean = true) =>
     }
   };
 
+  const removeMemberScore = async (scoreId: string) => {
+    setLoading(true);
+    try {
+      await memberScoreService.deleteMemberScore(scoreId);
+      await fetchMatrix();
+    } catch (err: any) {
+      setError(err.message || 'فشل حذف درجة الفرد');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     matrix,
     leaderboard,
@@ -61,5 +74,6 @@ export const useMemberScores = (seasonId?: string, autoFetch: boolean = true) =>
     error,
     refetch: fetchMatrix,
     updateMemberScore: updateMemberScoreValue,
+    removeMemberScore,
   };
 };

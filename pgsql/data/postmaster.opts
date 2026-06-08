@@ -1,1 +1,1 @@
-E:/marc/projects/abanob/pgsql/bin/postgres.exe "-D" ".\pgsql\data"
+E:/marc/projects/abanob/pgsql/bin/postgres.exe "-D" "e:\marc\projects\abanob\pgsql\data"

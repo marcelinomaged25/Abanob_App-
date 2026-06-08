@@ -9,6 +9,7 @@ namespace AbanobLeague.Application.Interfaces
     {
         Task<MemberScoreMatrixDto> GetMemberScoreMatrixAsync(Guid seasonId);
         Task<MemberScoreDto> UpdateMemberScoreAsync(UpdateMemberScoreDto dto, Guid userId);
+        Task<bool> DeleteMemberScoreAsync(Guid scoreId, Guid userId);
         Task<IEnumerable<MemberScoreDto>> GetScoresByMemberAsync(Guid teamMemberId);
         Task<IEnumerable<MemberLeaderboardEntryDto>> GetIndividualLeaderboardAsync(Guid seasonId);
     }

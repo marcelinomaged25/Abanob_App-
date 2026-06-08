@@ -5,7 +5,7 @@ import { TableSkeleton } from '@/components/LoadingSkeleton';
 import { EmptyState } from '@/components/EmptyState';
 import type { MemberScoreMatrixRow, MemberScoreHistoryEntry } from '@/types';
 import {
-  Users, X, Save, Plus, Clock, List,
+  Users, X, Save, Plus, Clock, List, Trash2,
   ChevronRight, Trophy, Medal, Award, ArrowRight
 } from 'lucide-react';
 
@@ -26,7 +26,7 @@ function RankBadge({ rank }: { rank: number }) {
 
 export const ManageMemberScoresPage: React.FC = () => {
   const { selectedSeasonId, selectedSeason } = useSeasonContext();
-  const { matrix, leaderboard, loading, updateMemberScore } = useMemberScores(selectedSeasonId);
+  const { matrix, leaderboard, loading, updateMemberScore, removeMemberScore } = useMemberScores(selectedSeasonId);
 
   // Active view: 'teams' | 'members'
   const [activeView, setActiveView] = useState<'teams' | 'members'>('teams');
@@ -103,8 +103,8 @@ export const ManageMemberScoresPage: React.FC = () => {
   const handleSave = async () => {
     if (!modal) return;
     const val = parseInt(newScoreVal);
-    if (isNaN(val) || val < 0 || val > modal.maxScore) {
-      alert(`الرجاء إدخال درجة صحيحة بين 0 و ${modal.maxScore}`);
+    if (isNaN(val) || val > modal.maxScore) {
+      alert(`الرجاء إدخال درجة لا تتعدى الحد الأقصى (${modal.maxScore})`);
       return;
     }
 
@@ -122,6 +122,16 @@ export const ManageMemberScoresPage: React.FC = () => {
       setModal(null);
     } catch {
       setSaveStatus('error');
+    }
+  };
+
+  const handleDeleteScore = async (scoreId: string) => {
+    if (!confirm('هل أنت متأكد من حذف هذا التقييم؟ سيتم خصمه من المجموع.')) return;
+    try {
+      await removeMemberScore(scoreId);
+      setModal(null);
+    } catch (err) {
+      alert('حدث خطأ أثناء الحذف');
     }
   };
 
@@ -468,9 +478,8 @@ export const ManageMemberScoresPage: React.FC = () => {
                       type="number"
                       value={newScoreVal}
                       onChange={(e) => setNewScoreVal(e.target.value)}
-                      min="0"
                       max={modal.maxScore}
-                      placeholder={`0 ~ ${modal.maxScore}`}
+                      placeholder={`حد أقصى ${modal.maxScore}`}
                       className="w-full h-10 px-3 text-sm font-black bg-white dark:bg-brand-navy-900 border border-slate-200 dark:border-brand-navy-700 text-slate-800 dark:text-white rounded-xl focus:border-brand-gold-500 focus:ring-1 focus:ring-brand-gold-500 focus:outline-none"
                     />
                   </div>
@@ -525,13 +534,13 @@ export const ManageMemberScoresPage: React.FC = () => {
                   <div className="space-y-2">
                     {modal.history.map((entry) => (
                       <div key={entry.id} className="flex items-start gap-3 p-3 bg-slate-50/80 dark:bg-brand-navy-950/50 rounded-xl border border-slate-100 dark:border-brand-navy-800">
-                        <div className="h-8 w-8 rounded-full bg-brand-gold-100 dark:bg-brand-gold-950/30 text-brand-gold-600 dark:text-brand-gold-400 flex items-center justify-center font-black text-xs shrink-0">
-                          +{entry.scoreValue}
+                        <div className={`h-8 w-8 rounded-full flex items-center justify-center font-black text-xs shrink-0 ${entry.scoreValue < 0 ? 'bg-red-500/20 text-red-600 dark:text-red-400' : 'bg-brand-gold-100 dark:bg-brand-gold-950/30 text-brand-gold-600 dark:text-brand-gold-400'}`}>
+                          {entry.scoreValue > 0 ? '+' : ''}{entry.scoreValue}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
                             <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                              تم إضافة {entry.scoreValue} نقطة
+                              تم إدخال {entry.scoreValue} نقطة
                             </span>
                             <span className="text-[10px] text-slate-400 shrink-0">
                               {new Date(entry.updatedAt).toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'medium' })}
@@ -543,6 +552,15 @@ export const ManageMemberScoresPage: React.FC = () => {
                             </p>
                           )}
                         </div>
+                        {entry.id && (
+                          <button
+                            onClick={() => handleDeleteScore(entry.id)}
+                            className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 p-1.5 rounded-lg transition-colors shrink-0"
+                            title="حذف التقييم"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     ))}
                   </div>

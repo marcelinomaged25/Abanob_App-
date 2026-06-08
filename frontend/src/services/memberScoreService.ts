@@ -34,3 +34,7 @@ export const updateMemberScore = async (scoreData: {
   });
   return response.data;
 };
+
+export const deleteMemberScore = async (scoreId: string): Promise<void> => {
+  await api.delete(`/memberscores/${scoreId}`);
+};

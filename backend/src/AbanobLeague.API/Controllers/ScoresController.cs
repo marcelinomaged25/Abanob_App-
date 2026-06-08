@@ -44,5 +44,13 @@ namespace AbanobLeague.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [Authorize]
+        [HttpDelete("{scoreId}")]
+        public async Task<IActionResult> Delete(Guid scoreId)
+        {
+            var success = await _scoreService.DeleteScoreAsync(scoreId, UserId);
+            if (!success) return NotFound();
+            return NoContent();
+        }
     }
 }
