@@ -11,6 +11,7 @@ import { LeaderboardPage } from '@/pages/public/LeaderboardPage'
 import { IndividualLeaderboardPage } from '@/pages/public/IndividualLeaderboardPage'
 import { HallOfFamePage } from '@/pages/public/HallOfFamePage'
 import { AnalyticsPage } from '@/pages/public/AnalyticsPage'
+import { NotFoundPage } from '@/pages/public/NotFoundPage'
 
 // Admin Pages
 import { LoginPage } from '@/pages/admin/LoginPage'
@@ -36,6 +37,7 @@ function App() {
           <Route path="/hall-of-fame" element={<HallOfFamePage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
 
         {/* Admin Routes */}
