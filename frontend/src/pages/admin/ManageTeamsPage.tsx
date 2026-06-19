@@ -13,7 +13,7 @@ import {
 
 export const ManageTeamsPage: React.FC = () => {
   const { selectedSeasonId, selectedSeason } = useSeasonContext();
-  const { teams, loading, error: teamsError, createTeam, updateTeam, deleteTeam, uploadTeamLogo } = useTeams(selectedSeasonId);
+  const { teams, loading, error: teamsError, createTeam, updateTeam, deleteTeam, uploadTeamLogo, addTeamMembers } = useTeams(selectedSeasonId);
   const maxTeamMembers = 10;
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -46,6 +46,7 @@ export const ManageTeamsPage: React.FC = () => {
     setEditingTeam(team);
     setName(team.name);
     setDescription(team.description);
+    setMemberNames([]);
     setModalOpen(true);
   };
 
@@ -65,10 +66,6 @@ export const ManageTeamsPage: React.FC = () => {
 
   const removeMemberField = (index: number) => {
     setMemberNames((current) => {
-      if (current.length === 1) {
-        return [''];
-      }
-
       return current.filter((_, currentIndex) => currentIndex !== index);
     });
   };
@@ -98,6 +95,10 @@ export const ManageTeamsPage: React.FC = () => {
           name: name.trim(),
           description,
         });
+
+        if (normalizedMemberNames.length > 0) {
+          await addTeamMembers(editingTeam.id, normalizedMemberNames);
+        }
       } else {
         await createTeam({
           name: name.trim(),
@@ -352,23 +353,23 @@ export const ManageTeamsPage: React.FC = () => {
                 />
               </div>
 
-              {!editingTeam && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between gap-3">
-                    <label className="text-xs font-extrabold text-slate-600 dark:text-slate-300">
-                      أفراد الفريق
-                    </label>
-                    <button
-                      type="button"
-                      onClick={addMemberField}
-                      disabled={memberNames.length >= maxTeamMembers}
-                      className="inline-flex items-center gap-1 rounded-lg border border-brand-gold-500/40 px-3 py-1.5 text-[10px] font-extrabold text-brand-gold-600 hover:bg-brand-gold-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-brand-gold-400 dark:hover:bg-brand-gold-500/10"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                      إضافة فرد
-                    </button>
-                  </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <label className="text-xs font-extrabold text-slate-600 dark:text-slate-300">
+                    {editingTeam ? 'إضافة أفراد جدد' : 'أفراد الفريق'}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={addMemberField}
+                    disabled={memberNames.length >= maxTeamMembers}
+                    className="inline-flex items-center gap-1 rounded-lg border border-brand-gold-500/40 px-3 py-1.5 text-[10px] font-extrabold text-brand-gold-600 hover:bg-brand-gold-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-brand-gold-400 dark:hover:bg-brand-gold-500/10"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    إضافة فرد
+                  </button>
+                </div>
 
+                {memberNames.length > 0 && (
                   <div className="space-y-2">
                     {memberNames.map((value, index) => (
                       <div key={index} className="flex items-center gap-2">
@@ -390,16 +391,16 @@ export const ManageTeamsPage: React.FC = () => {
                       </div>
                     ))}
                   </div>
+                )}
 
-                  <p className="text-[10px] text-slate-400">
-                    يمكنك إضافة حتى {maxTeamMembers} أفراد للفريق الجديد.
-                  </p>
-                </div>
-              )}
+                <p className="text-[10px] text-slate-400">
+                  يمكنك إضافة حتى {maxTeamMembers} أفراد للفريق.
+                </p>
+              </div>
 
               {editingTeam && (
                 <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200">
-                  تعديل أفراد الفريق من هذه الشاشة غير مفعل الآن حتى لا نحذف الأسماء الحالية بالخطأ. يمكنك تعديل اسم الفريق والوصف والشعار فقط.
+                  تعديل أفراد الفريق الحاليين من هذه الشاشة غير مفعل لحمايتهم من الحذف بالخطأ. يمكنك فقط إضافة أفراد جدد وتعديل اسم الفريق والوصف والشعار.
                 </p>
               )}
 

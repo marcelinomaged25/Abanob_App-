@@ -122,6 +122,41 @@ namespace AbanobLeague.Application.Services
             return result;
         }
 
+        public async Task<TeamDto?> AddTeamMembersAsync(Guid teamId, List<string> newMemberNames)
+        {
+            var team = await _unitOfWork.Teams.GetByIdAsync(teamId);
+            if (team == null) return null;
+
+            var existingMembers = (await _unitOfWork.TeamMembers.FindAsync(m => m.TeamId == teamId)).ToList();
+            int currentCount = existingMembers.Count;
+
+            var memberNames = NormalizeMemberNames(newMemberNames);
+            if (currentCount + memberNames.Count > 10)
+            {
+                throw new ArgumentException($"لا يمكن أن يتجاوز الفريق 10 أفراد. الفريق يحتوي حالياً على {currentCount} أفراد.");
+            }
+
+            for (var i = 0; i < memberNames.Count; i++)
+            {
+                await _unitOfWork.TeamMembers.AddAsync(new TeamMember
+                {
+                    Id = Guid.NewGuid(),
+                    TeamId = teamId,
+                    FullName = memberNames[i],
+                    DisplayOrder = currentCount + i + 1,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+
+            team.Season = await _unitOfWork.Seasons.GetByIdAsync(team.SeasonId);
+            team.Members = (await _unitOfWork.TeamMembers.FindAsync(m => m.TeamId == team.Id)).ToList();
+            var result = team.ToDto();
+            result.MemberCount = team.Members.Count;
+            return result;
+        }
+
         public async Task<bool> DeleteTeamAsync(Guid id)
         {
             var team = await _unitOfWork.Teams.GetByIdAsync(id);

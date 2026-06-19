@@ -11,6 +11,7 @@ namespace AbanobLeague.Application.Interfaces
         Task<TeamDto?> GetTeamByIdAsync(Guid id);
         Task<TeamDto> CreateTeamAsync(CreateTeamDto dto, string? logoUrl = null);
         Task<TeamDto?> UpdateTeamAsync(Guid id, UpdateTeamDto dto, string? logoUrl = null);
+        Task<TeamDto?> AddTeamMembersAsync(Guid teamId, List<string> newMemberNames);
         Task<bool> DeleteTeamAsync(Guid id);
         Task<TeamProfileDto?> GetTeamProfileAsync(Guid id);
     }

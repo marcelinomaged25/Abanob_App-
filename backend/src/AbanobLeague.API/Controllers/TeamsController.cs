@@ -62,6 +62,15 @@ namespace AbanobLeague.API.Controllers
         }
 
         [Authorize]
+        [HttpPost("{id}/members")]
+        public async Task<IActionResult> AddMembers(Guid id, [FromBody] List<string> newMemberNames)
+        {
+            var result = await _teamService.AddTeamMembersAsync(id, newMemberNames);
+            if (result == null) return NotFound(new { message = "الفريق غير موجود" });
+            return Ok(result);
+        }
+
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {

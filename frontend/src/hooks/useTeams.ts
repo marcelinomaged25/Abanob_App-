@@ -83,6 +83,20 @@ export const useTeams = (seasonId?: string, autoFetch: boolean = true) => {
     }
   };
 
+  const addTeamMembers = async (id: string, memberNames: string[]) => {
+    setLoading(true);
+    try {
+      const updated = await teamService.addTeamMembers(id, memberNames);
+      await fetchTeams();
+      return updated;
+    } catch (err: any) {
+      setError(err.message || 'فشل إضافة الأفراد');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     teams,
     loading,
@@ -90,6 +104,7 @@ export const useTeams = (seasonId?: string, autoFetch: boolean = true) => {
     refetch: fetchTeams,
     createTeam,
     updateTeam,
+    addTeamMembers,
     deleteTeam,
     uploadTeamLogo,
   };
