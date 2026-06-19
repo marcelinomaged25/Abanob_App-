@@ -14,7 +14,7 @@ import {
 export const ManageTeamsPage: React.FC = () => {
   const { selectedSeasonId, selectedSeason } = useSeasonContext();
   const { teams, loading, error: teamsError, createTeam, updateTeam, deleteTeam, uploadTeamLogo, addTeamMembers } = useTeams(selectedSeasonId);
-  const maxTeamMembers = 10;
+  const maxTeamMembers = 50;
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);

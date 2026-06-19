@@ -62,9 +62,9 @@ namespace AbanobLeague.Application.Services
             }
 
             var memberNames = NormalizeMemberNames(dto.MemberNames);
-            if (memberNames.Count > 10)
+            if (memberNames.Count > 50)
             {
-                throw new ArgumentException("لا يمكن أن يتجاوز الفريق 10 أفراد.");
+                throw new ArgumentException("لا يمكن أن يتجاوز الفريق 50 فرداً.");
             }
 
             var team = new Team
@@ -105,9 +105,9 @@ namespace AbanobLeague.Application.Services
             if (dto.MemberNames != null)
             {
                 var memberNames = NormalizeMemberNames(dto.MemberNames);
-                if (memberNames.Count > 10)
+                if (memberNames.Count > 50)
                 {
-                    throw new ArgumentException("لا يمكن أن يتجاوز الفريق 10 أفراد.");
+                    throw new ArgumentException("لا يمكن أن يتجاوز الفريق 50 فرداً.");
                 }
 
                 await ReplaceMembersAsync(team.Id, memberNames);
@@ -131,9 +131,9 @@ namespace AbanobLeague.Application.Services
             int currentCount = existingMembers.Count;
 
             var memberNames = NormalizeMemberNames(newMemberNames);
-            if (currentCount + memberNames.Count > 10)
+            if (currentCount + memberNames.Count > 50)
             {
-                throw new ArgumentException($"لا يمكن أن يتجاوز الفريق 10 أفراد. الفريق يحتوي حالياً على {currentCount} أفراد.");
+                throw new ArgumentException($"لا يمكن أن يتجاوز الفريق 50 فرداً. الفريق يحتوي حالياً على {currentCount} أفراد.");
             }
 
             for (var i = 0; i < memberNames.Count; i++)
