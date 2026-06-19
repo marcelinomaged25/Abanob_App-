@@ -124,7 +124,7 @@ namespace AbanobLeague.Application.Services
 
         public async Task<ScoreMatrixDto> GetScoreMatrixAsync(Guid seasonId)
         {
-            var categoriesList = (await _unitOfWork.Categories.FindAsync(c => c.SeasonId == seasonId))
+            var categoriesList = (await _unitOfWork.Categories.FindAsync(c => c.SeasonId == seasonId && (c.Type == AbanobLeague.Domain.Enums.CategoryType.Team || c.Type == AbanobLeague.Domain.Enums.CategoryType.Both)))
                 .OrderBy(c => c.Order)
                 .Select(c => c.ToDto())
                 .ToList();

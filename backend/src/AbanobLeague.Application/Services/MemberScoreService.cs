@@ -41,7 +41,11 @@ namespace AbanobLeague.Application.Services
 
                     int memberTotal = 0;
 
-                    foreach (var cat in scoringData.Categories.OrderBy(c => c.Order))
+                    var filteredCategories = scoringData.Categories
+                        .Where(c => c.Type == AbanobLeague.Domain.Enums.CategoryType.Individual || c.Type == AbanobLeague.Domain.Enums.CategoryType.Both)
+                        .OrderBy(c => c.Order);
+
+                    foreach (var cat in filteredCategories)
                     {
                         var cellScores = memberScores.Where(s => s.CategoryId == cat.Id).ToList();
                         int? totalValue = null;
@@ -88,7 +92,7 @@ namespace AbanobLeague.Application.Services
 
             return new MemberScoreMatrixDto
             {
-                Categories = scoringData.Categories.OrderBy(c => c.Order).Select(c => c.ToDto()).ToList(),
+                Categories = scoringData.Categories.Where(c => c.Type == AbanobLeague.Domain.Enums.CategoryType.Individual || c.Type == AbanobLeague.Domain.Enums.CategoryType.Both).OrderBy(c => c.Order).Select(c => c.ToDto()).ToList(),
                 Rows = rows
             };
         }

@@ -22,6 +22,7 @@ export const ManageCategoriesPage: React.FC = () => {
   // Form Fields
   const [name, setName] = useState('');
   const [maxScore, setMaxScore] = useState(50);
+  const [type, setType] = useState<'Both' | 'Team' | 'Individual'>('Both');
 
   // Delete Target
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -30,6 +31,7 @@ export const ManageCategoriesPage: React.FC = () => {
     setEditingCategory(null);
     setName('');
     setMaxScore(50);
+    setType('Both');
     setModalOpen(true);
   };
 
@@ -37,6 +39,7 @@ export const ManageCategoriesPage: React.FC = () => {
     setEditingCategory(cat);
     setName(cat.name);
     setMaxScore(cat.maxScore);
+    setType(cat.type || 'Both');
     setModalOpen(true);
   };
 
@@ -49,6 +52,7 @@ export const ManageCategoriesPage: React.FC = () => {
       maxScore,
       order: editingCategory ? editingCategory.order : categories.length + 1,
       seasonId: selectedSeasonId,
+      type,
     };
 
     try {
@@ -56,7 +60,8 @@ export const ManageCategoriesPage: React.FC = () => {
         await updateCategory(editingCategory.id, { 
           name: payload.name, 
           maxScore: payload.maxScore, 
-          order: payload.order 
+          order: payload.order,
+          type: payload.type
         });
       } else {
         await createCategory(payload);
@@ -137,8 +142,9 @@ export const ManageCategoriesPage: React.FC = () => {
             <thead>
               <tr className="bg-slate-50 dark:bg-brand-navy-900 border-b border-slate-200 dark:border-brand-navy-800 text-xs font-black text-slate-700 dark:text-slate-300">
                 <th className="py-4 px-6 w-20 text-center">الترتيب</th>
-                <th className="py-4 px-6 w-52">اسم الفئة</th>
-                <th className="py-4 px-6 text-center">الحد الأقصى للدرجة (Max Score)</th>
+                <th className="py-4 px-6 w-44">اسم الفئة</th>
+                <th className="py-4 px-6 text-center">نوع الفئة</th>
+                <th className="py-4 px-6 text-center">الحد الأقصى</th>
                 <th className="py-4 px-6 text-center w-28">تغيير الترتيب</th>
                 <th className="py-4 px-6 text-center w-48">إجراءات</th>
               </tr>
@@ -156,6 +162,13 @@ export const ManageCategoriesPage: React.FC = () => {
                     {/* Category Name */}
                     <td className="py-4 px-6 font-extrabold text-slate-900 dark:text-white">
                       {cat.name}
+                    </td>
+
+                    {/* Category Type */}
+                    <td className="py-4 px-6 text-center font-bold text-slate-600 dark:text-slate-400">
+                      {cat.type === 'Team' && 'جماعي فقط'}
+                      {cat.type === 'Individual' && 'فردي فقط'}
+                      {(cat.type === 'Both' || !cat.type) && 'جماعي وفردي'}
                     </td>
 
                     {/* Max Score */}
@@ -264,6 +277,21 @@ export const ManageCategoriesPage: React.FC = () => {
                   max={10000}
                   className="w-full h-10 px-3.5 text-xs bg-slate-50 border border-slate-200 text-slate-800 dark:bg-brand-navy-950 dark:border-brand-navy-850 dark:text-slate-100 rounded-xl"
                 />
+              </div>
+
+              {/* Type */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-slate-600 dark:text-slate-300">نوع الفئة (ظهور التقييم)</label>
+                <select
+                  value={type}
+                  onChange={(e) => setType(e.target.value as 'Both' | 'Team' | 'Individual')}
+                  className="w-full h-10 px-3.5 text-xs bg-slate-50 border border-slate-200 text-slate-800 dark:bg-brand-navy-950 dark:border-brand-navy-850 dark:text-slate-100 rounded-xl outline-none focus:border-brand-gold-500"
+                >
+                  <option value="Both">جماعي وفردي (تظهر في الاثنين)</option>
+                  <option value="Team">جماعي فقط (الفرق)</option>
+                  <option value="Individual">فردي فقط (الأفراد)</option>
+                </select>
+                <p className="text-[10px] text-slate-400">حدد أين يجب أن تظهر هذه الفئة أثناء التقييم.</p>
               </div>
 
               {/* Action Buttons */}

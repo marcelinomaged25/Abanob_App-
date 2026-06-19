@@ -39,7 +39,8 @@ namespace AbanobLeague.Application.Services
                 Name = dto.Name,
                 MaxScore = dto.MaxScore,
                 Order = dto.Order,
-                SeasonId = dto.SeasonId
+                SeasonId = dto.SeasonId,
+                Type = Enum.TryParse<AbanobLeague.Domain.Enums.CategoryType>(dto.Type, out var type) ? type : AbanobLeague.Domain.Enums.CategoryType.Both
             };
 
             await _unitOfWork.Categories.AddAsync(category);
@@ -56,6 +57,10 @@ namespace AbanobLeague.Application.Services
             category.Name = dto.Name;
             category.MaxScore = dto.MaxScore;
             category.Order = dto.Order;
+            if (Enum.TryParse<AbanobLeague.Domain.Enums.CategoryType>(dto.Type, out var updatedType))
+            {
+                category.Type = updatedType;
+            }
 
             _unitOfWork.Categories.Update(category);
             await _unitOfWork.SaveChangesAsync();

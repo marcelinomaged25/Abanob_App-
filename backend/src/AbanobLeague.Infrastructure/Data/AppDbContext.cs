@@ -67,6 +67,13 @@ namespace AbanobLeague.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
 
+                entity.Property(e => e.Type)
+                    .HasConversion(
+                        v => v.ToString(),
+                        v => (CategoryType)Enum.Parse(typeof(CategoryType), v)
+                    )
+                    .HasDefaultValue(CategoryType.Both);
+
                 entity.HasOne(c => c.Season)
                     .WithMany(s => s.Categories)
                     .HasForeignKey(c => c.SeasonId)

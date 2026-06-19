@@ -64,7 +64,8 @@ namespace AbanobLeague.Application.Mappings
                 Name = category.Name,
                 MaxScore = category.MaxScore,
                 Order = category.Order,
-                SeasonId = category.SeasonId
+                SeasonId = category.SeasonId,
+                Type = category.Type.ToString()
             };
         }
 

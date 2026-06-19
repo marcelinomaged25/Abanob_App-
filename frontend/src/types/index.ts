@@ -50,6 +50,7 @@ export interface Category {
   maxScore: number;
   order: number;
   seasonId: string;
+  type: 'Both' | 'Team' | 'Individual';
 }
 
 export interface Score {

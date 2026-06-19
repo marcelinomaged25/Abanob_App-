@@ -10,6 +10,7 @@ namespace AbanobLeague.Domain.Entities
         public int MaxScore { get; set; }
         public int Order { get; set; }
         public Guid SeasonId { get; set; }
+        public Enums.CategoryType Type { get; set; } = Enums.CategoryType.Both;
 
         // Navigation properties
         public Season? Season { get; set; }

@@ -9,6 +9,7 @@ namespace AbanobLeague.Application.DTOs.Categories
         public int MaxScore { get; set; }
         public int Order { get; set; }
         public Guid SeasonId { get; set; }
+        public string Type { get; set; } = "Both";
     }
 
     public class CreateCategoryDto
@@ -17,6 +18,7 @@ namespace AbanobLeague.Application.DTOs.Categories
         public int MaxScore { get; set; }
         public int Order { get; set; }
         public Guid SeasonId { get; set; }
+        public string Type { get; set; } = "Both";
     }
 
     public class UpdateCategoryDto
@@ -24,6 +26,7 @@ namespace AbanobLeague.Application.DTOs.Categories
         public string Name { get; set; } = string.Empty;
         public int MaxScore { get; set; }
         public int Order { get; set; }
+        public string Type { get; set; } = "Both";
     }
 
     public class CategoryReorderDto
