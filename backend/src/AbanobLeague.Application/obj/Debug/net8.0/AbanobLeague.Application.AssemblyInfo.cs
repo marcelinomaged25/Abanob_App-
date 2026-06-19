@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AbanobLeague.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8581c940de639caf8557b3f5e8ad784751173375")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9effa6beb57619b8d31273f2a47805ac7ae81fe9")]
 [assembly: System.Reflection.AssemblyProductAttribute("AbanobLeague.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AbanobLeague.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
