@@ -33,18 +33,32 @@ export const createTeam = async (
 
 export const updateTeam = async (
   id: string,
-  team: Pick<Team, 'name' | 'description'>
+  team: Pick<Team, 'name' | 'description'> & { appendMemberNames?: string[] }
 ): Promise<Team> => {
   const response = await api.put<Team>(`/teams/${id}`, {
     name: team.name,
     description: team.description,
+    appendMemberNames: team.appendMemberNames,
   });
   return response.data;
 };
 
 export const addTeamMembers = async (id: string, memberNames: string[]): Promise<Team> => {
-  const response = await api.post<Team>(`/teams/${id}/members`, memberNames);
-  return response.data;
+  try {
+    const response = await api.post<Team>(`/teams/${id}/members`, memberNames);
+    return response.data;
+  } catch (error: any) {
+    if (error?.response?.status !== 404) {
+      throw error;
+    }
+
+    const team = await getTeamById(id);
+    return updateTeam(id, {
+      name: team.name,
+      description: team.description,
+      appendMemberNames: memberNames,
+    });
+  }
 };
 
 export const deleteTeam = async (id: string): Promise<void> => {

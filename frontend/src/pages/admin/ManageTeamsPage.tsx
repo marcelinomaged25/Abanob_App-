@@ -13,7 +13,7 @@ import {
 
 export const ManageTeamsPage: React.FC = () => {
   const { selectedSeasonId, selectedSeason } = useSeasonContext();
-  const { teams, loading, error: teamsError, createTeam, updateTeam, deleteTeam, uploadTeamLogo, addTeamMembers } = useTeams(selectedSeasonId);
+  const { teams, loading, error: teamsError, createTeam, updateTeam, addTeamMembers, deleteTeam, uploadTeamLogo } = useTeams(selectedSeasonId);
   const maxTeamMembers = 50;
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -95,7 +95,6 @@ export const ManageTeamsPage: React.FC = () => {
           name: name.trim(),
           description,
         });
-
         if (normalizedMemberNames.length > 0) {
           await addTeamMembers(editingTeam.id, normalizedMemberNames);
         }

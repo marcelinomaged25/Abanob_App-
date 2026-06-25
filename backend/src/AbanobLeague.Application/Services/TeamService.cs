@@ -102,7 +102,11 @@ namespace AbanobLeague.Application.Services
 
             _unitOfWork.Teams.Update(team);
 
-            if (dto.MemberNames != null)
+            if (dto.AppendMemberNames != null && dto.AppendMemberNames.Count > 0)
+            {
+                await AppendMembersAsync(team.Id, NormalizeMemberNames(dto.AppendMemberNames));
+            }
+            else if (dto.MemberNames != null)
             {
                 var memberNames = NormalizeMemberNames(dto.MemberNames);
                 if (memberNames.Count > 50)
@@ -127,27 +131,7 @@ namespace AbanobLeague.Application.Services
             var team = await _unitOfWork.Teams.GetByIdAsync(teamId);
             if (team == null) return null;
 
-            var existingMembers = (await _unitOfWork.TeamMembers.FindAsync(m => m.TeamId == teamId)).ToList();
-            int currentCount = existingMembers.Count;
-
-            var memberNames = NormalizeMemberNames(newMemberNames);
-            if (currentCount + memberNames.Count > 50)
-            {
-                throw new ArgumentException($"لا يمكن أن يتجاوز الفريق 50 فرداً. الفريق يحتوي حالياً على {currentCount} أفراد.");
-            }
-
-            for (var i = 0; i < memberNames.Count; i++)
-            {
-                await _unitOfWork.TeamMembers.AddAsync(new TeamMember
-                {
-                    Id = Guid.NewGuid(),
-                    TeamId = teamId,
-                    FullName = memberNames[i],
-                    DisplayOrder = currentCount + i + 1,
-                    CreatedAt = DateTime.UtcNow
-                });
-            }
-
+            await AppendMembersAsync(teamId, NormalizeMemberNames(newMemberNames));
             await _unitOfWork.SaveChangesAsync();
 
             team.Season = await _unitOfWork.Seasons.GetByIdAsync(team.SeasonId);
@@ -270,6 +254,40 @@ namespace AbanobLeague.Application.Services
                 ,
                 Members = memberDtos
             };
+        }
+
+        private async Task AppendMembersAsync(Guid teamId, List<string> memberNames)
+        {
+            if (memberNames.Count == 0) return;
+
+            var existingMembers = (await _unitOfWork.TeamMembers.FindAsync(m => m.TeamId == teamId)).ToList();
+            var existingNames = existingMembers
+                .Select(m => m.FullName)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var namesToAdd = memberNames
+                .Where(name => !existingNames.Contains(name))
+                .ToList();
+
+            if (namesToAdd.Count == 0) return;
+
+            var currentCount = existingMembers.Count;
+            if (currentCount + namesToAdd.Count > 50)
+            {
+                throw new ArgumentException($"لا يمكن أن يتجاوز الفريق 50 فرداً. الفريق يحتوي حالياً على {currentCount} أفراد.");
+            }
+
+            for (var i = 0; i < namesToAdd.Count; i++)
+            {
+                await _unitOfWork.TeamMembers.AddAsync(new TeamMember
+                {
+                    Id = Guid.NewGuid(),
+                    TeamId = teamId,
+                    FullName = namesToAdd[i],
+                    DisplayOrder = currentCount + i + 1,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
         }
 
         private async Task AddMembersAsync(Guid teamId, List<string> memberNames)

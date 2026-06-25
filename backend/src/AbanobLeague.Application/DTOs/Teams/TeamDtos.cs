@@ -28,6 +28,7 @@ namespace AbanobLeague.Application.DTOs.Teams
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public List<string>? MemberNames { get; set; }
+        public List<string>? AppendMemberNames { get; set; }
     }
 
     public class TeamProfileDto

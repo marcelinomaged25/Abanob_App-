@@ -42,7 +42,10 @@ export const useTeams = (seasonId?: string, autoFetch: boolean = true) => {
     }
   };
 
-  const updateTeam = async (id: string, data: Pick<Team, 'name' | 'description'> & { id?: string; logoUrl?: string; seasonId?: string }) => {
+  const updateTeam = async (
+    id: string,
+    data: Pick<Team, 'name' | 'description'> & { appendMemberNames?: string[]; id?: string; logoUrl?: string; seasonId?: string }
+  ) => {
     setLoading(true);
     try {
       const updated = await teamService.updateTeam(id, data);
