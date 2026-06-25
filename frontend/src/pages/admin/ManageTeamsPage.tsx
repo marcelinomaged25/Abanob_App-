@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTeams } from '@/hooks/useTeams';
 import { useSeasonContext } from '@/context/SeasonContext';
 import { TableSkeleton } from '@/components/LoadingSkeleton';
 import { EmptyState } from '@/components/EmptyState';
 import { SearchInput } from '@/components/SearchInput';
 import { getApiErrorMessage } from '@/utils/apiError';
-import type { Team } from '@/types';
+import { getTeamProfile } from '@/services/teamService';
+import type { Team, TeamMember } from '@/types';
 import { 
   Users, Plus, Trash2, Edit2, 
   X, AlertTriangle, UploadCloud 
@@ -13,11 +14,14 @@ import {
 
 export const ManageTeamsPage: React.FC = () => {
   const { selectedSeasonId, selectedSeason } = useSeasonContext();
-  const { teams, loading, error: teamsError, createTeam, updateTeam, addTeamMembers, deleteTeam, uploadTeamLogo } = useTeams(selectedSeasonId);
+  const { teams, loading, error: teamsError, createTeam, updateTeam, addTeamMembers, removeTeamMember, deleteTeam, uploadTeamLogo } = useTeams(selectedSeasonId);
   const maxTeamMembers = 50;
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
+  const [editingTeamMembers, setEditingTeamMembers] = useState<TeamMember[]>([]);
+  const [membersLoading, setMembersLoading] = useState(false);
+  const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
 
   // Form Fields
   const [name, setName] = useState('');
@@ -39,6 +43,9 @@ export const ManageTeamsPage: React.FC = () => {
     setName('');
     setDescription('');
     setMemberNames(['']);
+    setEditingTeamMembers([]);
+    setMembersLoading(false);
+    setRemovingMemberId(null);
     setModalOpen(true);
   };
 
@@ -47,6 +54,9 @@ export const ManageTeamsPage: React.FC = () => {
     setName(team.name);
     setDescription(team.description);
     setMemberNames([]);
+    setEditingTeamMembers([]);
+    setMembersLoading(true);
+    setRemovingMemberId(null);
     setModalOpen(true);
   };
 
@@ -69,6 +79,68 @@ export const ManageTeamsPage: React.FC = () => {
       return current.filter((_, currentIndex) => currentIndex !== index);
     });
   };
+
+  const handleRemoveMember = async (memberId: string) => {
+    if (!editingTeam || removingMemberId) {
+      return;
+    }
+
+    const target = editingTeamMembers.find((member) => member.id === memberId);
+    if (!target) {
+      return;
+    }
+
+    const confirmed = window.confirm(`هل تريد حذف العضو "${target.fullName}" من الفريق؟`);
+    if (!confirmed) {
+      return;
+    }
+
+    setPageError(null);
+    setRemovingMemberId(memberId);
+
+    try {
+      await removeTeamMember(editingTeam.id, memberId);
+      setEditingTeamMembers((current) => current.filter((member) => member.id !== memberId));
+    } catch (err) {
+      console.error(err);
+      setPageError(getApiErrorMessage(err, 'فشل حذف العضو من الفريق. حاول مرة أخرى.'));
+    } finally {
+      setRemovingMemberId(null);
+    }
+  };
+
+  useEffect(() => {
+    if (!modalOpen || !editingTeam) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadMembers = async () => {
+      setMembersLoading(true);
+      try {
+        const profile = await getTeamProfile(editingTeam.id);
+        if (!cancelled) {
+          setEditingTeamMembers(profile.members);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error(err);
+          setPageError(getApiErrorMessage(err, 'فشل تحميل أعضاء الفريق الحاليين.'));
+        }
+      } finally {
+        if (!cancelled) {
+          setMembersLoading(false);
+        }
+      }
+    };
+
+    void loadMembers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [editingTeam, modalOpen]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -352,6 +424,63 @@ export const ManageTeamsPage: React.FC = () => {
                 />
               </div>
 
+              {editingTeam && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <label className="text-xs font-extrabold text-slate-600 dark:text-slate-300">
+                      الأفراد الحاليون
+                    </label>
+                    <span className="text-[10px] font-semibold text-slate-400">
+                      {editingTeamMembers.length} فرد
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-2 dark:border-brand-navy-850 dark:bg-brand-navy-950">
+                    {membersLoading ? (
+                      <p className="px-3 py-2 text-[10px] font-semibold text-slate-400">
+                        جاري تحميل الأعضاء...
+                      </p>
+                    ) : editingTeamMembers.length > 0 ? (
+                      editingTeamMembers.map((member) => {
+                        const isRemoving = removingMemberId === member.id;
+
+                        return (
+                          <div
+                            key={member.id}
+                            className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 dark:border-brand-navy-800 dark:bg-brand-navy-900"
+                          >
+                            <div className="min-w-0">
+                              <div className="truncate text-xs font-extrabold text-slate-900 dark:text-white">
+                                {member.fullName}
+                              </div>
+                              <div className="text-[10px] text-slate-400">ترتيب #{member.displayOrder}</div>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveMember(member.id)}
+                              disabled={isRemoving}
+                              className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-rose-200 text-rose-500 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-rose-950/40 dark:hover:bg-rose-950/40"
+                              title="حذف العضو من الفريق"
+                            >
+                              {isRemoving ? (
+                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-rose-500 border-t-transparent" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p className="px-3 py-2 text-[10px] font-semibold text-slate-400">
+                        لا يوجد أفراد داخل هذا الفريق حالياً.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-3">
                   <label className="text-xs font-extrabold text-slate-600 dark:text-slate-300">
@@ -396,12 +525,6 @@ export const ManageTeamsPage: React.FC = () => {
                   يمكنك إضافة حتى {maxTeamMembers} أفراد للفريق.
                 </p>
               </div>
-
-              {editingTeam && (
-                <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200">
-                  تعديل أفراد الفريق الحاليين من هذه الشاشة غير مفعل لحمايتهم من الحذف بالخطأ. يمكنك فقط إضافة أفراد جدد وتعديل اسم الفريق والوصف والشعار.
-                </p>
-              )}
 
               {/* Action Buttons */}
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-brand-navy-850">

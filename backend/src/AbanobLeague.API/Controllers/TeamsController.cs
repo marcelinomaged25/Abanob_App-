@@ -71,6 +71,15 @@ namespace AbanobLeague.API.Controllers
         }
 
         [Authorize]
+        [HttpDelete("{teamId}/members/{memberId}")]
+        public async Task<IActionResult> RemoveMember(Guid teamId, Guid memberId)
+        {
+            var result = await _teamService.RemoveTeamMemberAsync(teamId, memberId);
+            if (result == null) return NotFound(new { message = "Ø§Ù„ÙØ±ÙŠÙ‚ Ø£Ùˆ Ø§Ù„Ø¹Ø¶Ùˆ ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯" });
+            return Ok(result);
+        }
+
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {

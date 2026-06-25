@@ -141,6 +141,28 @@ namespace AbanobLeague.Application.Services
             return result;
         }
 
+        public async Task<TeamDto?> RemoveTeamMemberAsync(Guid teamId, Guid memberId)
+        {
+            var team = await _unitOfWork.Teams.GetByIdAsync(teamId);
+            if (team == null) return null;
+
+            var member = await _unitOfWork.TeamMembers.GetByIdAsync(memberId);
+            if (member == null || member.TeamId != teamId) return null;
+
+            await DeleteMemberScoresAsync(memberId);
+            _unitOfWork.TeamMembers.Delete(member);
+            await _unitOfWork.SaveChangesAsync();
+
+            await ReorderMembersAsync(teamId);
+            await _unitOfWork.SaveChangesAsync();
+
+            team.Season = await _unitOfWork.Seasons.GetByIdAsync(team.SeasonId);
+            team.Members = (await _unitOfWork.TeamMembers.FindAsync(m => m.TeamId == team.Id)).ToList();
+            var result = team.ToDto();
+            result.MemberCount = team.Members.Count;
+            return result;
+        }
+
         public async Task<bool> DeleteTeamAsync(Guid id)
         {
             var team = await _unitOfWork.Teams.GetByIdAsync(id);
@@ -287,6 +309,33 @@ namespace AbanobLeague.Application.Services
                     DisplayOrder = currentCount + i + 1,
                     CreatedAt = DateTime.UtcNow
                 });
+            }
+        }
+
+        private async Task DeleteMemberScoresAsync(Guid memberId)
+        {
+            var memberScores = (await _unitOfWork.MemberScores.FindAsync(s => s.TeamMemberId == memberId)).ToList();
+            foreach (var score in memberScores)
+            {
+                _unitOfWork.MemberScores.Delete(score);
+            }
+        }
+
+        private async Task ReorderMembersAsync(Guid teamId)
+        {
+            var members = (await _unitOfWork.TeamMembers.FindAsync(m => m.TeamId == teamId))
+                .OrderBy(m => m.DisplayOrder)
+                .ThenBy(m => m.FullName)
+                .ToList();
+
+            for (var i = 0; i < members.Count; i++)
+            {
+                var desiredOrder = i + 1;
+                if (members[i].DisplayOrder != desiredOrder)
+                {
+                    members[i].DisplayOrder = desiredOrder;
+                    _unitOfWork.TeamMembers.Update(members[i]);
+                }
             }
         }
 

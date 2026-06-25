@@ -100,6 +100,20 @@ export const useTeams = (seasonId?: string, autoFetch: boolean = true) => {
     }
   };
 
+  const removeTeamMember = async (teamId: string, memberId: string) => {
+    setLoading(true);
+    try {
+      const updated = await teamService.removeTeamMember(teamId, memberId);
+      await fetchTeams();
+      return updated;
+    } catch (err: any) {
+      setError(err.message || 'ÙØ´Ù„ Ø­Ø°Ù Ø§Ù„Ø¹Ø¶Ùˆ');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     teams,
     loading,
@@ -108,6 +122,7 @@ export const useTeams = (seasonId?: string, autoFetch: boolean = true) => {
     createTeam,
     updateTeam,
     addTeamMembers,
+    removeTeamMember,
     deleteTeam,
     uploadTeamLogo,
   };
